@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>סטודיו רקעים</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1226;--panel:#181c3a;--panel2:#1f244a;--line:#2c3263;--text:#eef0ff;--muted:#9aa3d6;--accent:#8b5cf6;--accent2:#22d3ee;--ok:#34d399}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;font-family:'Heebo','Segoe UI',Arial,sans-serif;color:var(--text);
+  background:radial-gradient(1200px 600px at 85% -10%,#2a1f6b 0%,transparent 60%),
+             radial-gradient(900px 500px at -10% 110%,#0b4a5c 0%,transparent 55%),var(--bg);min-height:100vh}
+header{padding:22px 28px 6px}
+h1{margin:0;font-size:1.6rem;font-weight:800;background:linear-gradient(90deg,#c4b5fd,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent}
+header p{margin:6px 0 0;color:var(--muted);font-size:.95rem}
+main{display:grid;grid-template-columns:420px 1fr;gap:22px;padding:16px 28px 40px;max-width:1500px;margin:auto;align-items:start}
+@media(max-width:960px){main{grid-template-columns:1fr;padding:12px 14px 40px}}
+.step{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px;margin-bottom:14px}
+.step h2{margin:0 0 10px;font-size:1rem;display:flex;align-items:center;gap:10px}
+.num{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.85rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0b0d1f}
+label{display:block;font-weight:600;margin:12px 0 5px;font-size:.86rem;color:var(--muted)}
+input[type=text],select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:#12163a;color:var(--text);font:inherit;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{min-height:72px;resize:vertical}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=color]{width:100%;height:40px;border:1px solid var(--line);border-radius:11px;padding:3px;background:#12163a}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.check{display:flex;gap:9px;align-items:center;font-weight:500;margin-top:11px;color:var(--text);font-size:.88rem}
+.check input{accent-color:var(--accent);width:17px;height:17px}
+.drop{border:2px dashed #3d4590;border-radius:14px;padding:22px 12px;text-align:center;cursor:pointer;background:rgba(139,92,246,.06);transition:.2s}
+.drop:hover,.drop.over{background:rgba(139,92,246,.16);border-color:var(--accent)}
+.drop small{display:block;color:var(--muted);margin-top:4px}
+.status{min-height:1.3em;margin-top:9px;font-size:.86rem;color:var(--accent2);text-align:center;line-height:1.5}
+.status.ok{color:var(--ok)} .status.err{color:#fb7185}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#12163a;border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:6px}
+.seg button{border:0;background:transparent;color:var(--muted);padding:11px 4px;border-radius:9px;font:inherit;font-size:.95rem;font-weight:800;cursor:pointer}
+.seg button.on{background:linear-gradient(135deg,var(--accent),#6d4be0);color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.chip{border:1px solid var(--line);background:#12163a;color:var(--text);border-radius:20px;padding:5px 12px;font:inherit;font-size:.8rem;cursor:pointer}
+.chip:hover{border-color:var(--accent);background:#1a1f4d}
+.fmts{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;margin-top:4px}
+.fmt{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:#12163a;border-radius:10px;padding:8px 9px;font-size:.84rem;cursor:pointer;margin:0;color:var(--text);font-weight:500}
+.fmt input{accent-color:var(--accent);width:16px;height:16px}
+details{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:2px 12px 10px;background:rgba(18,22,58,.5)}
+summary{cursor:pointer;font-weight:700;font-size:.9rem;padding:10px 0;color:var(--text)}
+.btn{width:100%;padding:13px;border:0;border-radius:12px;font:inherit;font-weight:800;font-size:1rem;cursor:pointer;color:#fff;margin-top:12px}
+.btn.gen{background:linear-gradient(135deg,var(--accent),#ec4899)}
+.btn.dl{background:linear-gradient(135deg,#0ea5e9,var(--accent2));color:#06222b}
+.btn.alt{background:#2a3070;color:var(--text)}
+.btn.skip{background:transparent;border:1px solid var(--line);color:var(--text);font-size:.85rem;font-weight:600;padding:9px;margin-top:8px}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn:hover:not(:disabled){filter:brightness(1.1)}
+.hint{font-size:.78rem;color:var(--muted);line-height:1.55;margin-top:9px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px;margin-top:8px}
+.gitem{height:78px;border-radius:10px;border:2px solid transparent;cursor:pointer;overflow:hidden;position:relative;background:#12163a;padding:0}
+.gitem.on{border-color:var(--accent2)}
+.gitem img,.gitem div{width:100%;height:100%;object-fit:cover;display:block}
+.gitem span{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);font-size:.62rem;padding:2px 3px;text-align:center;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stage{position:sticky;top:14px}
+@media(max-width:960px){.stage{position:static}}
+.tabs{display:flex;gap:8px;margin-bottom:10px;overflow-x:auto}
+.tabs button{flex:1;min-width:92px;padding:10px 8px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--muted);font:inherit;font-weight:700;cursor:pointer;white-space:nowrap}
+.tabs button.on{background:var(--panel2);color:var(--text);border-color:var(--accent)}
+.canvasBox{border:1px solid var(--line);border-radius:18px;padding:14px;display:grid;place-items:center;
+  background:repeating-conic-gradient(#1b2050 0 25%,#171b44 0 50%) 0 0/22px 22px}
+canvas{max-width:100%;max-height:74vh;width:auto;height:auto;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.thumbs{display:flex;gap:8px;overflow-x:auto;padding:10px 2px 2px}
+.thumb{height:64px;border-radius:8px;border:2px solid transparent;cursor:pointer;opacity:.7;flex:none}
+.thumb.on{border-color:var(--accent2);opacity:1}
+.dlrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+</style>
+</head>
+<body>
+<header>
+  <h1>סטודיו רקעים</h1>
+  <p>מעלים צילום של המוצר, ובוחרים: AI שממציא רקע חדש, או רקע מוכן מהגלריה</p>
+</header>
+
+<main>
+  <section>
+    <div class="step">
+      <h2><span class="num">1</span> תמונת המוצר</h2>
+      <div class="drop" id="drop">
+        <b>לחץ להעלאה או גרור לכאן</b>
+        <small>אפשר גם להדביק עם Ctrl+V</small>
+        <div id="fname" style="font-size:.82rem;margin-top:6px;color:var(--accent2)"></div>
+        <input type="file" id="file" accept="image/*" hidden>
+      </div>
+    </div>
+
+    <div class="step">
+      <h2><span class="num">2</span> מצב ורקע</h2>
+      <div class="seg" id="modeSeg">
+        <button data-m="ai" class="on">✨ AI</button>
+        <button data-m="reg">🖼️ רגיל</button>
+      </div>
+
+      <!-- ===== מצב AI ===== -->
+      <div id="aiBox">
+        <div class="hint" style="margin-top:2px">ה-AI עורך את התמונה שלך ומחליף את הרקע והסביבה, כשהמוצר נשמר כמו שהוא.</div>
+        <label for="prompt">איזה רקע?</label>
+        <textarea id="prompt" placeholder="למשל: שולחן עץ בהיר במטבח מודרני עם אור בוקר"></textarea>
+        <div class="chips" id="presets"></div>
+
+        <label for="model">מודל</label>
+        <select id="model">
+          <optgroup label="Google">
+            <option value="google/gemini-3.1-flash-image-preview">Nano Banana 2 (מומלץ)</option>
+            <option value="google/gemini-3-pro-image">Nano Banana Pro (איכות גבוהה, איטי יותר)</option>
+            <option value="google/gemini-3.1-flash-lite-image">Nano Banana 2 Lite (מהיר וזול)</option>
+            <option value="gemini-2.5-flash-image-preview">Nano Banana המקורי</option>
+          </optgroup>
+          <optgroup label="OpenAI (ניסיוני)">
+            <option value="openai/gpt-image-2">GPT Image 2</option>
+            <option value="gpt-image-1.5">GPT Image 1.5</option>
+            <option value="gpt-image-1-mini">GPT Image 1 Mini</option>
+          </optgroup>
+          <optgroup label="xAI (ניסיוני)">
+            <option value="x-ai/grok-imagine-image-2.0">Grok Imagine 2.0</option>
+          </optgroup>
+        </select>
+
+        <details>
+          <summary>אפשרויות מתקדמות</summary>
+          <label for="light">תאורה</label>
+          <select id="light">
+            <option value="">טבעית (ברירת מחדל)</option>
+            <option value="Use soft diffused studio lighting.">סטודיו רכה</option>
+            <option value="Use warm golden hour light.">שעת זהב חמה</option>
+            <option value="Use bright airy daylight.">אור יום בהיר</option>
+            <option value="Use dramatic side lighting with deep shadows.">דרמטית עם צללים</option>
+          </select>
+          <label for="extra">הוראות נוספות (אופציונלי)</label>
+          <textarea id="extra" placeholder="למשל: הוסף עציץ ירוק בצד שמאל"></textarea>
+          <label class="check"><input type="checkbox" id="strict" checked> שמור על המוצר בדיוק כמו שהוא (מומלץ)</label>
+          <label class="check"><input type="checkbox" id="fallback" checked> אם המודל נכשל, נסה מודל גיבוי</label>
+        </details>
+
+        <button class="btn gen" id="gen">✨ צור תמונות</button>
+        <div class="status" id="status"></div>
+        <div class="hint">בפעם הראשונה ייפתח חלון התחברות ל-Puter (צריך לאשר חלונות קופצים). השימוש נספר בחשבון ה-Puter שלך, וכל פורמט הוא יצירה נפרדת.</div>
+      </div>
+
+      <!-- ===== מצב רגיל ===== -->
+      <div id="regBox" hidden>
+        <div class="hint" style="margin-top:2px">בוחרים רקע מוכן והמוצר מוצמד עליו. בלי AI ובלי עלות.</div>
+
+        <label>גלריית רקעים</label>
+        <div class="gallery" id="gallery"></div>
+        <div class="hint" id="galNote" hidden>לא נמצאה גלריה (backgrounds/backgrounds.json). זה תקין כשפותחים את הקובץ מחוץ לאתר ב-GitHub. אפשר להעלות רקע משלך למטה.</div>
+        <label for="bgFiles">הוסף רקע משלך (אפשר כמה)</label>
+        <input type="file" id="bgFiles" accept="image/*" multiple style="color:var(--muted)">
+
+        <label for="scale">גודל המוצר</label>
+        <input type="range" id="scale" min="30" max="100" value="80">
+        <label for="offY">מיקום אנכי</label>
+        <input type="range" id="offY" min="-25" max="25" value="0">
+        <label class="check"><input type="checkbox" id="shadow" checked> צל מתחת למוצר</label>
+
+        <label style="margin-top:16px">הפרדת המוצר מהרקע המקורי</label>
+        <div class="status" id="rstatus"></div>
+        <div id="tools" hidden>
+          <button class="btn skip" id="retry">🔁 נסה שוב להסיר רקע בשרת</button>
+          <button class="btn skip" id="quick">✂️ הסרה מהירה במכשיר (לרקע אחיד)</button>
+          <div id="quickRow" hidden>
+            <label for="tol">רגישות ההסרה (גדול יותר = מסיר יותר)</label>
+            <input type="range" id="tol" min="4" max="70" value="24">
+          </div>
+          <button class="btn skip" id="skipBg">להשתמש בתמונה כמו שהיא (במסגרת)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <h2><span class="num">3</span> טקסט על התמונה (אופציונלי)</h2>
+      <input type="text" id="name" placeholder="שם, למשל: מארגן מגירות מיני">
+      <label for="subtitle">כותרת משנה</label>
+      <input type="text" id="subtitle" placeholder="למשל: 8 תאים · מודפס בלי תמיכות">
+      <div class="row2">
+        <div>
+          <label for="namePos">מיקום</label>
+          <select id="namePos"><option value="top">למעלה</option><option value="bottom">למטה</option></select>
+        </div>
+        <div><label for="nameColor">צבע</label><input type="color" id="nameColor" value="#ffffff"></div>
+      </div>
+      <label for="nameSize">גודל הטקסט</label>
+      <input type="range" id="nameSize" min="60" max="150" value="100">
+      <label class="check"><input type="checkbox" id="nameBg" checked> רצועה כהה מאחורי הטקסט</label>
+    </div>
+
+    <div class="step">
+      <h2><span class="num">4</span> פורמטים וייצוא</h2>
+      <label style="margin-top:0">פורמטים</label>
+      <div class="fmts" id="fmts"></div>
+      <label for="ftype">סוג קובץ</label>
+      <select id="ftype">
+        <option value="png">PNG (איכות מלאה)</option>
+        <option value="jpeg">JPG (קובץ קטן יותר)</option>
+      </select>
+    </div>
+  </section>
+
+  <section class="stage">
+    <div class="tabs" id="tabs"></div>
+    <div class="canvasBox"><canvas id="cv"></canvas></div>
+    <div class="thumbs" id="thumbs"></div>
+    <div class="dlrow">
+      <button class="btn dl" id="dlOne">הורד את התמונה הזו</button>
+      <button class="btn alt" id="dlAll">הורד את כל הפורמטים</button>
+    </div>
+  </section>
+</main>
+
+<script src="https://js.puter.com/v2/"></script>
+<script>
+const $ = id => document.getElementById(id);
+const FONT = "'Heebo','Segoe UI',Arial,sans-serif";
+const FALLBACK = 'google/gemini-3.1-flash-image-preview';
+const GRADIO_URL = 'https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js';
+const SPACES = [
+  { id: 'briaai/BRIA-RMBG-2.0', api: '/image' },
+  { id: 'Mystyc/remove-bg-rmbg', api: '/predict' }
+];
+const FORMATS = [
+  { id: 'p', label: '3:4',  sub: 'לאורך', W: 1500, H: 2000, gw: 960,  gh: 1280, hint: 'vertical portrait, 3:4 aspect ratio' },
+  { id: 'l', label: '4:3',  sub: 'לרוחב', W: 2000, H: 1500, gw: 1280, gh: 960,  hint: 'horizontal landscape, 4:3 aspect ratio' },
+  { id: 's', label: '1:1',  sub: 'ריבוע', W: 1600, H: 1600, gw: 1024, gh: 1024, hint: 'square, 1:1 aspect ratio' },
+  { id: 't', label: '9:16', sub: 'ארוך',  W: 1080, H: 1920, gw: 720,  gh: 1280, hint: 'tall vertical story format, 9:16 aspect ratio' },
+  { id: 'w', label: '16:9', sub: 'רחב',   W: 1920, H: 1080, gw: 1280, gh: 720,  hint: 'wide horizontal format, 16:9 aspect ratio' }
+];
+
+let mode = 'ai', view = 'p';
+let src = null, lastImg = null, cutout = null, rectMode = false;
+const results = {}, sel = {};
+FORMATS.forEach(f => { results[f.id] = []; sel[f.id] = 0; });
+const bgItems = [];   // {name, grad:[c1,c2]} או {name, im, thumb}
+let bgSel = 0;
+
+/* ================= עזרים ================= */
+function loadImage(u){ return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = u; }); }
+function waitImg(im, s, ms = 150000){
+  return new Promise((res, rej) => {
+    const t = setTimeout(() => rej(new Error('timeout')), ms);
+    im.onload = () => { clearTimeout(t); res(im); };
+    im.onerror = () => { clearTimeout(t); rej(new Error('load')); };
+    im.src = s;
+  });
+}
+const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+const errMsg = e => (e && (e.message || (e.error && e.error.message) || (typeof e === 'string' ? e : ''))) || '';
+function scaledCanvas(im, maxDim){
+  const w0 = im.naturalWidth || im.width, h0 = im.naturalHeight || im.height;
+  const k = Math.min(1, maxDim / Math.max(w0, h0));
+  const c = document.createElement('canvas');
+  c.width = Math.round(w0 * k); c.height = Math.round(h0 * k);
+  c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+  return c;
+}
+const toBlob = c => new Promise(res => c.toBlob(res, 'image/png'));
+function setStatus(t, c){ const s = $('status'); s.className = 'status' + (c ? ' ' + c : ''); s.textContent = t; }
+function setR(t, c){ const s = $('rstatus'); s.className = 'status' + (c ? ' ' + c : ''); s.textContent = t; }
+function rr(ctx, x, y, w, h, r){
+  r = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function drawCover(ctx, im, W, H){
+  const sw = im.naturalWidth || im.width, sh = im.naturalHeight || im.height;
+  const k = Math.max(W / sw, H / sh);
+  ctx.drawImage(im, (W - sw * k) / 2, (H - sh * k) / 2, sw * k, sh * k);
+}
+function placeholder(ctx, W, H, text){
+  ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.direction = 'rtl';
+  ctx.font = `700 ${Math.min(W, H) * .045}px ${FONT}`;
+  ctx.fillText(text, W / 2, H / 2);
+}
+
+/* ================= פורמטים ולשוניות ================= */
+FORMATS.forEach(f => {
+  const l = document.createElement('label');
+  l.className = 'fmt';
+  l.innerHTML = `<input type="checkbox" value="${f.id}" ${f.id === 'p' || f.id === 'l' ? 'checked' : ''}><span><b>${f.label}</b> ${f.sub}</span>`;
+  l.querySelector('input').onchange = () => { ensureOne(); rebuildTabs(); render(); };
+  $('fmts').appendChild(l);
+});
+const activeFormats = () => FORMATS.filter(f => document.querySelector(`#fmts input[value="${f.id}"]`).checked);
+function ensureOne(){ if (!activeFormats().length) document.querySelector('#fmts input[value="p"]').checked = true; }
+function rebuildTabs(){
+  const act = activeFormats();
+  if (!act.find(f => f.id === view)) view = act[0].id;
+  $('tabs').innerHTML = '';
+  act.forEach(f => {
+    const b = document.createElement('button');
+    b.textContent = `${f.label} ${f.sub}`;
+    b.className = f.id === view ? 'on' : '';
+    b.onclick = () => { view = f.id; rebuildTabs(); render(); };
+    $('tabs').appendChild(b);
+  });
+}
+
+/* ================= מעבר בין מצבים ================= */
+document.querySelectorAll('#modeSeg button').forEach(b => b.onclick = () => {
+  mode = b.dataset.m;
+  document.querySelectorAll('#modeSeg button').forEach(x => x.classList.toggle('on', x === b));
+  $('aiBox').hidden = mode !== 'ai';
+  $('regBox').hidden = mode !== 'reg';
+  $('thumbs').hidden = mode !== 'ai';
+  if (mode === 'reg' && lastImg && !cutout && !removing) startRemoval();
+  render();
+});
+
+/* ================= מצב AI ================= */
+['שולחן עץ בהיר במטבח מודרני', 'סטודיו מינימלי עם קיר בז׳ וצללים רכים', 'שולחן עבודה מסודר עם אור חלון',
+ 'משטח שיש לבן ואור רך', 'סלון סקנדינבי עם מדף עץ', 'גינה ירוקה שטופת שמש', 'חדר כהה דרמטי עם תאורת קצה',
+ 'שולחן חגיגי חם עם אורות זהובים'].forEach(t => {
+  const b = document.createElement('button');
+  b.className = 'chip'; b.textContent = t;
+  b.onclick = () => { $('prompt').value = t; };
+  $('presets').appendChild(b);
+});
+
+function makeInput(W, H){
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  x.fillStyle = '#888'; x.fillRect(0, 0, W, H);
+  const sw = src.naturalWidth, sh = src.naturalHeight;
+  const kc = Math.max(W / sw, H / sh);
+  x.save();
+  if ('filter' in x) x.filter = 'blur(30px)';
+  x.drawImage(src, (W - sw * kc) / 2, (H - sh * kc) / 2, sw * kc, sh * kc);
+  x.restore();
+  const k = Math.min(W / sw, H / sh);
+  x.drawImage(src, (W - sw * k) / 2, (H - sh * k) / 2, sw * k, sh * k);
+  return c;
+}
+function buildPrompt(desc, f){
+  const keep = $('strict').checked
+    ? 'Keep the main product EXACTLY unchanged: the same shape, proportions, colors, textures, holes, edges and every small detail. Do not redraw, restyle, add or remove anything on the product itself. '
+    : 'Keep the main product clearly recognizable. ';
+  const extra = $('extra').value.trim();
+  return 'Edit this photo. ' + keep +
+    'Replace only the background and the surface around the product with: ' + desc + '. ' +
+    'Make the lighting, shadows and reflections around the product natural and realistic. ' +
+    ($('light').value ? $('light').value + ' ' : '') +
+    (extra ? 'Additional instructions: ' + extra + '. ' : '') +
+    'Fill the entire frame with the new scene, product centered and clearly visible, ' + f.hint + ' composition. ' +
+    'Do not add any text, logos or watermarks.';
+}
+async function editOne(model, desc, f){
+  if (!window.puter) throw new Error('Puter לא נטען. בדוק חיבור לאינטרנט');
+  const b64 = makeInput(f.gw, f.gh).toDataURL('image/jpeg', 0.92).split(',')[1];
+  const el = await
