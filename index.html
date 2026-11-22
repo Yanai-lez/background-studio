@@ -149,7 +149,7 @@ canvas{max-width:100%;max-height:74vh;width:auto;height:auto;border-radius:10px;
 
         <label>גלריית רקעים</label>
         <div class="gallery" id="gallery"></div>
-        <div class="hint" id="galNote" hidden>לא נמצאה גלריה (backgrounds/backgrounds.json). זה תקין כשפותחים את הקובץ מחוץ לאתר ב-GitHub. אפשר להעלות רקע משלך למטה.</div>
+        <div class="hint" id="galNote" hidden>לא נמצאה גלריה (backgrounds/backgrounds.json). אפשר להעלות רקע משלך למטה.</div>
         <label for="bgFiles">הוסף רקע משלך (אפשר כמה)</label>
         <input type="file" id="bgFiles" accept="image/*" multiple style="color:var(--muted)">
 
@@ -235,7 +235,7 @@ let mode = 'ai', view = 'p';
 let src = null, lastImg = null, cutout = null, rectMode = false;
 const results = {}, sel = {};
 FORMATS.forEach(f => { results[f.id] = []; sel[f.id] = 0; });
-const bgItems = [];   // {name, grad:[c1,c2]} או {name, im, thumb}
+const bgItems = [];
 let bgSel = 0;
 
 /* ================= עזרים ================= */
@@ -357,4 +357,480 @@ function buildPrompt(desc, f){
 async function editOne(model, desc, f){
   if (!window.puter) throw new Error('Puter לא נטען. בדוק חיבור לאינטרנט');
   const b64 = makeInput(f.gw, f.gh).toDataURL('image/jpeg', 0.92).split(',')[1];
-  const el = await
+  const el = await puter.ai.txt2img(buildPrompt(desc, f), { model, input_image: b64, input_image_mime_type: 'image/jpeg' });
+  const im = new Image();
+  im.crossOrigin = 'anonymous';
+  try { return await waitImg(im, el.src); } catch { return el; }
+}
+async function editWithFallback(desc, f){
+  const model = $('model').value;
+  try { return { im: await editOne(model, desc, f), model }; }
+  catch (e){
+    if ($('fallback').checked && model !== FALLBACK){
+      console.warn('fallback after', model, e);
+      return { im: await editOne(FALLBACK, desc, f), model: FALLBACK };
+    }
+    throw e;
+  }
+}
+$('gen').onclick = async () => {
+  const desc = $('prompt').value.trim();
+  if (!src){ setStatus('העלה קודם תמונת מוצר', 'err'); return; }
+  if (!desc){ setStatus('כתוב איזה רקע אתה רוצה', 'err'); return; }
+  const fmts = activeFormats();
+  const btn = $('gen'); btn.disabled = true; btn.textContent = 'יוצר...';
+  const t0 = Date.now(); let done = 0, lastErr = null;
+  const tick = setInterval(() => setStatus(
+    `ה-AI עובד... ${done}/${fmts.length} פורמטים · ${Math.round((Date.now() - t0) / 1000)} שניות (בפעם הראשונה יופיע חלון התחברות)`), 1000);
+  try {
+    for (let i = 0; i < fmts.length; i += 2){
+      const chunk = fmts.slice(i, i + 2);
+      await Promise.allSettled(chunk.map(async f => {
+        try {
+          const r = await editWithFallback(desc, f);
+          results[f.id].push(r);
+          sel[f.id] = results[f.id].length - 1;
+        } catch (e){ console.error(f.label, e); lastErr = e; }
+        done++;
+        if (f.id === view) render();
+      }));
+    }
+    clearInterval(tick);
+    const ok = fmts.filter(f => results[f.id].length).length;
+    if (!ok) throw lastErr || new Error('failed');
+    render();
+    setStatus(ok === fmts.length ? 'מוכן ✓ לא אוהב? לחץ שוב לתוצאה אחרת' :
+      `מוכן חלקית: ${ok} מתוך ${fmts.length} פורמטים. לחץ שוב כדי לנסות את השאר.`, 'ok');
+  } catch (e){
+    clearInterval(tick);
+    const m = errMsg(e);
+    setStatus('היצירה נכשלה' + (m ? ': ' + m : '') + '. אם נסגר חלון ההתחברות, נסה שוב, או בחר מודל אחר.', 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = '✨ צור תמונות';
+  }
+};
+
+/* ================= מצב רגיל: גלריה ================= */
+[['לבן נקי', '#ffffff', '#e8ecf1'], ['שמיים', '#dbe7ff', '#8fb0f5'], ['מנטה', '#d9f2e3', '#7fc79c'],
+ ['אפרסק', '#ffe6d5', '#f4a574'], ['חול', '#f5efe6', '#d9c9b0'], ['סגול', '#f3d9ff', '#b98bea'],
+ ['צהוב', '#fff4c2', '#f5c542'], ['לילה', '#2b2f3a', '#0f1117']]
+.forEach(([name, a, b]) => bgItems.push({ name, grad: [a, b] }));
+
+function buildGallery(){
+  const g = $('gallery');
+  g.innerHTML = '';
+  bgItems.forEach((it, i) => {
+    const b = document.createElement('button');
+    b.className = 'gitem' + (i === bgSel ? ' on' : '');
+    if (it.grad){
+      const d = document.createElement('div');
+      d.style.background = `linear-gradient(135deg,${it.grad[0]},${it.grad[1]})`;
+      b.appendChild(d);
+    } else {
+      const im = document.createElement('img');
+      im.src = it.thumb; im.alt = it.name;
+      b.appendChild(im);
+    }
+    const sp = document.createElement('span'); sp.textContent = it.name; b.appendChild(sp);
+    b.onclick = () => { bgSel = i; buildGallery(); render(); };
+    g.appendChild(b);
+  });
+}
+async function loadGallery(){
+  try {
+    const r = await fetch('backgrounds/backgrounds.json', { cache: 'no-cache' });
+    if (!r.ok) throw new Error('no manifest');
+    const list = await r.json();
+    for (const it of list){
+      const file = typeof it === 'string' ? it : it.file;
+      const name = typeof it === 'string' ? file.replace(/\.[^.]+$/, '') : (it.name || file);
+      try {
+        const im = await loadImage('backgrounds/' + encodeURI(file));
+        bgItems.push({ name, im, thumb: im.src });
+      } catch (e){ console.warn('לא נטען', file); }
+    }
+    $('galNote').hidden = true;
+  } catch { $('galNote').hidden = false; }
+  buildGallery();
+}
+$('bgFiles').onchange = async () => {
+  for (const f of $('bgFiles').files){
+    try {
+      const u = URL.createObjectURL(f);
+      const im = await loadImage(u);
+      bgItems.push({ name: f.name.replace(/\.[^.]+$/, ''), im, thumb: u });
+      bgSel = bgItems.length - 1;
+    } catch {}
+  }
+  buildGallery(); render();
+};
+
+/* ================= הסרת רקע מהמוצר ================= */
+function trim(c){
+  const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+  let minX = c.width, minY = c.height, maxX = 0, maxY = 0;
+  for (let y = 0; y < c.height; y++){
+    for (let x = 0; x < c.width; x++){
+      if (d[(y * c.width + x) * 4 + 3] > 20){
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX <= minX) return c;
+  const o = document.createElement('canvas');
+  o.width = maxX - minX + 1; o.height = maxY - minY + 1;
+  o.getContext('2d').drawImage(c, minX, minY, o.width, o.height, 0, 0, o.width, o.height);
+  return o;
+}
+function applyMask(maskImg){
+  const full = document.createElement('canvas');
+  full.width = lastImg.width; full.height = lastImg.height;
+  const fx = full.getContext('2d');
+  fx.drawImage(lastImg, 0, 0);
+  fx.globalCompositeOperation = 'destination-in';
+  fx.imageSmoothingQuality = 'high';
+  fx.drawImage(maskImg, 0, 0, full.width, full.height);
+  cutout = trim(full);
+  rectMode = false;
+  render();
+}
+function hasAlpha(im){
+  const c = document.createElement('canvas');
+  const w = 200, h = Math.max(1, Math.round(200 * (im.naturalHeight || im.height) / (im.naturalWidth || im.width)));
+  c.width = w; c.height = h;
+  const x = c.getContext('2d'); x.drawImage(im, 0, 0, w, h);
+  const d = x.getImageData(0, 0, w, h).data;
+  let n = 0;
+  for (let i = 3; i < d.length; i += 4) if (d[i] < 250) n++;
+  return n > w * h * 0.005;
+}
+function collectUrls(x, out){
+  if (!x) return out;
+  if (typeof x === 'string'){ if (/^https?:|^data:image/.test(x)) out.push(x); }
+  else if (Array.isArray(x)) x.forEach(v => collectUrls(v, out));
+  else if (typeof x === 'object'){
+    if (typeof x.url === 'string') out.push(x.url);
+    Object.values(x).forEach(v => { if (v && typeof v === 'object') collectUrls(v, out); });
+  }
+  return out;
+}
+async function runSpace(mod, sp, blob){
+  const app = await mod.Client.connect(sp.id);
+  const file = new File([blob], 'product.png', { type: 'image/png' });
+  const res = await app.predict(sp.api, [mod.handle_file(file)]);
+  const urls = [...new Set(collectUrls(res.data, []))].reverse();
+  for (const u of urls){
+    try {
+      const r = await fetch(u);
+      const b = await r.blob();
+      const im = await loadImage(URL.createObjectURL(b));
+      if (hasAlpha(im)) return im;
+    } catch (e){ console.warn(e); }
+  }
+  throw new Error('no transparent output');
+}
+
+let job = 0, removing = false;
+async function serverRemove(myJob){
+  $('tools').hidden = false;
+  removing = true;
+  let mod;
+  try { mod = await import(GRADIO_URL); }
+  catch (e){
+    console.error(e); removing = false;
+    setR('לא ניתן לטעון את רכיב השרת. בדוק חיבור או חסימת פרסומות, או השתמש באחת האפשרויות למטה.', 'err');
+    return;
+  }
+  const blob = await toBlob(scaledCanvas(lastImg, 1024));
+  const t0 = Date.now();
+  let phase = '';
+  const tick = setInterval(() => {
+    if (myJob !== job){ clearInterval(tick); return; }
+    setR(`${phase} · ${Math.round((Date.now() - t0) / 1000)} שניות`);
+  }, 1000);
+  try {
+    for (const sp of SPACES){
+      if (myJob !== job) return;
+      phase = `מסיר רקע בשרת (${sp.id.split('/')[1]})`;
+      setR(phase);
+      try {
+        const out = await withTimeout(runSpace(mod, sp, blob), 100000);
+        if (myJob !== job) return;
+        applyMask(out);
+        setR('המוצר מוכן ✓', 'ok');
+        return;
+      } catch (e){ console.warn(sp.id, e); }
+    }
+    if (myJob === job) setR('השרתים החינמיים עמוסים כרגע. נסה שוב בעוד דקה, או השתמש בהסרה המהירה / בתמונה כמו שהיא.', 'err');
+  } finally { clearInterval(tick); if (myJob === job) removing = false; }
+}
+function startRemoval(){ const j = ++job; serverRemove(j); }
+$('retry').onclick = () => { if (lastImg) startRemoval(); };
+$('skipBg').onclick = () => {
+  if (!lastImg) return;
+  job++; removing = false;
+  cutout = lastImg; rectMode = true;
+  setR('משתמש בתמונה כמו שהיא ✓', 'ok');
+  render();
+};
+
+/* הסרה מהירה במכשיר: flood fill מהשוליים */
+function floodMask(srcC, tol){
+  const w = srcC.width, h = srcC.height;
+  const d = srcC.getContext('2d').getImageData(0, 0, w, h).data;
+  const bg = new Uint8Array(w * h);
+  const stack = new Int32Array(w * h);
+  let sp = 0;
+  const push = i => { if (!bg[i]){ bg[i] = 1; stack[sp++] = i; } };
+  for (let x = 0; x < w; x++){ push(x); push((h - 1) * w + x); }
+  for (let y = 0; y < h; y++){ push(y * w); push(y * w + w - 1); }
+  const t2 = tol * tol * 3;
+  const tryN = (j, r, g, b) => {
+    if (bg[j]) return;
+    const dr = d[j * 4] - r, dg = d[j * 4 + 1] - g, db = d[j * 4 + 2] - b;
+    if (dr * dr + dg * dg + db * db <= t2){ bg[j] = 1; stack[sp++] = j; }
+  };
+  while (sp){
+    const i = stack[--sp];
+    const x = i % w, y = (i / w) | 0;
+    const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2];
+    if (x > 0) tryN(i - 1, r, g, b);
+    if (x < w - 1) tryN(i + 1, r, g, b);
+    if (y > 0) tryN(i - w, r, g, b);
+    if (y < h - 1) tryN(i + w, r, g, b);
+  }
+  const m = document.createElement('canvas');
+  m.width = w; m.height = h;
+  const mx = m.getContext('2d');
+  const id = mx.createImageData(w, h);
+  for (let i = 0; i < w * h; i++){
+    id.data[i * 4] = id.data[i * 4 + 1] = id.data[i * 4 + 2] = 255;
+    id.data[i * 4 + 3] = bg[i] ? 0 : 255;
+  }
+  mx.putImageData(id, 0, 0);
+  return m;
+}
+let quickPending = false;
+function quickApply(){
+  if (!lastImg || quickPending) return;
+  quickPending = true;
+  requestAnimationFrame(() => {
+    quickPending = false;
+    applyMask(floodMask(scaledCanvas(lastImg, 700), +$('tol').value));
+    setR('הסרה מהירה הופעלה ✓ התאם את הרגישות אם צריך', 'ok');
+  });
+}
+$('quick').onclick = () => { job++; removing = false; $('quickRow').hidden = false; quickApply(); };
+$('tol').addEventListener('input', quickApply);
+
+/* ================= טקסט ================= */
+function layoutText(ctx, W, H){
+  const name = $('name').value.trim(), sub = $('subtitle').value.trim();
+  if (!name && !sub) return null;
+  const s = $('nameSize').value / 100, maxW = W * .9;
+  const fit = (txt, size, weight) => {
+    ctx.font = `${weight} ${size}px ${FONT}`;
+    while (ctx.measureText(txt).width > maxW && size > 18){ size -= 2; ctx.font = `${weight} ${size}px ${FONT}`; }
+    return size;
+  };
+  let nSize = Math.min(W, H) * .075 * s;
+  if (name) nSize = fit(name, nSize, 800);
+  const sSize = sub ? fit(sub, name ? nSize * .56 : Math.min(W, H) * .045 * s, 500) : 0;
+  const pad = Math.min(W, H) * .03;
+  const nH = name ? nSize * 1.25 : 0, sH = sub ? sSize * 1.35 : 0;
+  const bandH = pad * 2 + nH + sH;
+  const pos = $('namePos').value;
+  return { name, sub, nSize, sSize, pad, nH, sH, bandH, pos, top: pos === 'top' ? 0 : H - bandH };
+}
+function drawText(ctx, W, H){
+  const L = layoutText(ctx, W, H);
+  if (!L) return;
+  ctx.save();
+  if ($('nameBg').checked){ ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(0, L.top, W, L.bandH); }
+  ctx.direction = 'rtl'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = $('nameColor').value;
+  ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 12; ctx.shadowOffsetY = 3;
+  let y = L.top + L.pad;
+  if (L.name){ ctx.font = `800 ${L.nSize}px ${FONT}`; ctx.fillText(L.name, W / 2, y + L.nH / 2); y += L.nH; }
+  if (L.sub){ ctx.font = `500 ${L.sSize}px ${FONT}`; ctx.globalAlpha = .92; ctx.fillText(L.sub, W / 2, y + L.sH / 2); }
+  ctx.restore();
+}
+
+/* ================= ציור מצב רגיל ================= */
+function drawRegBg(ctx, W, H){
+  const it = bgItems[bgSel];
+  if (!it){ ctx.fillStyle = '#e8ecf1'; ctx.fillRect(0, 0, W, H); return; }
+  if (it.grad){
+    const g = ctx.createLinearGradient(0, 0, W * .6, H);
+    g.addColorStop(0, it.grad[0]); g.addColorStop(1, it.grad[1]);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  } else drawCover(ctx, it.im, W, H);
+}
+function drawProductReg(ctx, W, H){
+  const prod = cutout || lastImg;
+  if (!prod) return;
+  const frame = rectMode || !cutout;
+  const L = layoutText(ctx, W, H);
+  const M = W * .06;
+  const top = M + (L && L.pos === 'top' ? L.bandH : 0);
+  const bottom = H - M - (L && L.pos === 'bottom' ? L.bandH : 0);
+  const aw = W - 2 * M, ah = bottom - top;
+  const sc = $('scale').value / 100;
+  const k = Math.min(aw / prod.width, ah / prod.height) * sc;
+  const pw = prod.width * k, ph = prod.height * k;
+  const cx = W / 2, cy = top + ah / 2 + (+$('offY').value / 100) * H;
+  const px = cx - pw / 2, py = cy - ph / 2;
+  if (frame){
+    const r = Math.min(pw, ph) * .04;
+    ctx.save();
+    if ($('shadow').checked){ ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 50; ctx.shadowOffsetY = 20; }
+    ctx.fillStyle = '#fff'; rr(ctx, px, py, pw, ph, r); ctx.fill();
+    ctx.shadowColor = 'transparent';
+    rr(ctx, px, py, pw, ph, r); ctx.clip();
+    ctx.drawImage(prod, px, py, pw, ph);
+    ctx.restore();
+    return;
+  }
+  if ($('shadow').checked){
+    const rx = pw * .55, ry = Math.max(14, ph * .05);
+    ctx.save();
+    ctx.translate(cx, py + ph - ry * .2); ctx.scale(1, ry / rx);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
+    g.addColorStop(0, 'rgba(0,0,0,.5)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.fillRect(-rx, -rx, rx * 2, rx * 2);
+    ctx.restore();
+  }
+  ctx.drawImage(prod, px, py, pw, ph);
+}
+
+/* ================= רינדור ================= */
+function renderFmt(c, f, aiIm){
+  c.width = f.W; c.height = f.H;
+  const ctx = c.getContext('2d');
+  const W = f.W, H = f.H;
+  ctx.fillStyle = '#1b2050'; ctx.fillRect(0, 0, W, H);
+  if (mode === 'reg'){
+    if (!lastImg){ placeholder(ctx, W, H, 'העלה תמונה כדי להתחיל'); return; }
+    drawRegBg(ctx, W, H);
+    drawProductReg(ctx, W, H);
+    drawText(ctx, W, H);
+    return;
+  }
+  if (aiIm){
+    drawCover(ctx, aiIm, W, H);
+    drawText(ctx, W, H);
+  } else if (src){
+    ctx.save();
+    if ('filter' in ctx) ctx.filter = 'blur(40px)';
+    drawCover(ctx, src, W, H);
+    ctx.restore();
+    const k = Math.min(W / src.naturalWidth, H / src.naturalHeight) * .8;
+    const w = src.naturalWidth * k, h = src.naturalHeight * k;
+    ctx.drawImage(src, (W - w) / 2, (H - h) / 2, w, h);
+    ctx.fillStyle = 'rgba(0,0,0,.55)';
+    ctx.fillRect(0, H * .46, W, H * .08);
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.direction = 'rtl';
+    ctx.font = `700 ${Math.min(W, H) * .04}px ${FONT}`;
+    ctx.fillText('זו התמונה המקורית. לחץ על "צור תמונות"', W / 2, H * .5);
+  } else placeholder(ctx, W, H, 'העלה תמונה כדי להתחיל');
+}
+const cv = $('cv');
+let rp = false;
+function render(){
+  if (rp) return;
+  rp = true;
+  requestAnimationFrame(() => {
+    rp = false;
+    const f = FORMATS.find(x => x.id === view);
+    const entry = mode === 'ai' ? results[f.id][sel[f.id]] : null;
+    renderFmt(cv, f, entry ? entry.im : null);
+    if (mode === 'ai') renderThumbs(f);
+  });
+}
+function renderThumbs(f){
+  const box = $('thumbs');
+  box.innerHTML = '';
+  results[f.id].forEach((r, i) => {
+    const t = document.createElement('img');
+    t.className = 'thumb' + (i === sel[f.id] ? ' on' : '');
+    t.src = r.im.src;
+    t.onclick = () => { sel[f.id] = i; render(); };
+    box.appendChild(t);
+  });
+}
+
+/* ================= העלאת תמונה ================= */
+async function handleFile(f){
+  try {
+    src = await loadImage(URL.createObjectURL(f));
+    lastImg = scaledCanvas(src, 1800);
+    cutout = null; rectMode = false; job++; removing = false;
+    FORMATS.forEach(x => { results[x.id] = []; sel[x.id] = 0; });
+    $('fname').textContent = f.name || 'תמונה מודבקת';
+    $('tools').hidden = true; $('quickRow').hidden = true; setR('');
+    setStatus('התמונה נטענה. כתוב רקע ולחץ "צור תמונות"');
+    render();
+    if (mode === 'reg') startRemoval();
+  } catch { setStatus('לא ניתן לטעון את התמונה', 'err'); }
+}
+const drop = $('drop'), file = $('file');
+drop.onclick = () => file.click();
+file.onchange = () => file.files[0] && handleFile(file.files[0]);
+['dragover', 'dragenter'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', ev => { const f = ev.dataTransfer.files[0]; if (f) handleFile(f); });
+document.addEventListener('paste', ev => {
+  const it = [...(ev.clipboardData ? ev.clipboardData.items : [])].find(i => i.type.startsWith('image/'));
+  if (it) handleFile(it.getAsFile());
+});
+['name', 'subtitle', 'namePos', 'nameColor', 'nameBg', 'nameSize', 'scale', 'offY', 'shadow'].forEach(id => {
+  $(id).addEventListener('input', render);
+  $(id).addEventListener('change', render);
+});
+
+/* ================= הורדה ================= */
+function saveCanvas(c, base){
+  const type = $('ftype').value === 'jpeg' ? 'image/jpeg' : 'image/png';
+  const ext = $('ftype').value === 'jpeg' ? 'jpg' : 'png';
+  try {
+    c.toBlob(b => {
+      if (!b){ alert('לא ניתן לייצא את התמונה. נסה ליצור מחדש.'); return; }
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(b); a.download = `${base}.${ext}`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+    }, type, 0.92);
+  } catch { alert('לא ניתן לייצא את התמונה. נסה ליצור מחדש.'); }
+}
+function exportCanvas(f){
+  const c = document.createElement('canvas');
+  if (mode === 'reg'){
+    if (!lastImg) return null;
+    renderFmt(c, f, null);
+    return c;
+  }
+  const e = results[f.id][sel[f.id]];
+  if (!e) return null;
+  renderFmt(c, f, e.im);
+  return c;
+}
+const fname = f => 'product-' + f.label.replace(':', 'x');
+$('dlOne').onclick = () => {
+  const f = FORMATS.find(x => x.id === view);
+  const c = exportCanvas(f);
+  if (!c){ alert(mode === 'ai' ? 'צור קודם תמונות בפורמט הזה' : 'העלה קודם תמונת מוצר'); return; }
+  saveCanvas(c, fname(f));
+};
+$('dlAll').onclick = () => {
+  const list = activeFormats().filter(f => exportCanvas(f));
+  if (!list.length){ alert(mode === 'ai' ? 'צור קודם תמונות' : 'העלה קודם תמונת מוצר'); return; }
+  list.forEach((f, i) => setTimeout(() => saveCanvas(exportCanvas(f), fname(f)), i * 700));
+};
+
+/* ================= התחלה ================= */
+rebuildTabs(); buildGallery(); render(); loadGallery();
+if (document.fonts) document.fonts.ready.then(render);
+</script>
+</body>
+</html>
