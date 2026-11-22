@@ -442,12 +442,15 @@ async function loadGallery(){
     if (!r.ok) throw new Error('no manifest');
     const list = await r.json();
     for (const it of list){
-      const file = typeof it === 'string' ? it : it.file;
-      const name = typeof it === 'string' ? file.replace(/\.[^.]+$/, '') : (it.name || file);
-      try {
-        const im = await loadImage('backgrounds/' + encodeURI(file));
-        bgItems.push({ name, im, thumb: im.src });
-      } catch (e){ console.warn('לא נטען', file); }
+      // פורמטים נתמכים: "a.jpg" | {file, name} | {name, portrait, landscape}
+      const o = typeof it === 'string' ? { file: it } : it;
+      const base = o.file || o.portrait || o.landscape || '';
+      const name = o.name || base.replace(/\.[^.]+$/, '');
+      const load = async f => { try { return f ? await loadImage('backgrounds/' + encodeURI(f)) : null; } catch { console.warn('לא נטען', f); return null; } };
+      let p = await load(o.portrait), l = await load(o.landscape);
+      if (o.file){ const one = await load(o.file); p = p || one; l = l || one; }
+      if (!p && !l) continue;
+      bgItems.push({ name, ims: { p, l }, thumb: (l || p).src });
     }
     $('galNote').hidden = true;
   } catch { $('galNote').hidden = false; }
@@ -458,7 +461,7 @@ $('bgFiles').onchange = async () => {
     try {
       const u = URL.createObjectURL(f);
       const im = await loadImage(u);
-      bgItems.push({ name: f.name.replace(/\.[^.]+$/, ''), im, thumb: u });
+      bgItems.push({ name: f.name.replace(/\.[^.]+$/, ''), ims: { p: im, l: im }, thumb: u });
       bgSel = bgItems.length - 1;
     } catch {}
   }
@@ -665,7 +668,12 @@ function drawRegBg(ctx, W, H){
     const g = ctx.createLinearGradient(0, 0, W * .6, H);
     g.addColorStop(0, it.grad[0]); g.addColorStop(1, it.grad[1]);
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  } else drawCover(ctx, it.im, W, H);
+  } else {
+    // בוחר את גרסת האורך או הרוחב לפי יחס הפורמט, ואם חסרה גרסה משתמש באחרת
+    const tall = H > W * 1.05;
+    const im = tall ? (it.ims.p || it.ims.l) : (it.ims.l || it.ims.p);
+    drawCover(ctx, im, W, H);
+  }
 }
 function drawProductReg(ctx, W, H){
   const prod = cutout || lastImg;
