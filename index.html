@@ -6,6 +6,15 @@
 <title>סטודיו רקעים</title>
 <meta name="theme-color" content="#0f1226">
 <meta name="description" content="מעלים תמונת מוצר ומחליפים לה רקע: AI שממציא רקע חדש, או רקע מוכן מהגלריה">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="סטודיו רקעים">
+<meta property="og:title" content="סטודיו רקעים">
+<meta property="og:description" content="מעלים תמונת מוצר ומחליפים לה רקע: AI שממציא רקע חדש, או רקע מוכן מהגלריה">
+<meta property="og:url" content="https://yanai-lez.github.io/background-studio/">
+<meta property="og:image" content="https://yanai-lez.github.io/background-studio/icons/og-image.jpg">
+<meta property="og:image:width" content="600">
+<meta property="og:image:height" content="600">
+<meta name="twitter:card" content="summary">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -22,7 +31,9 @@ body{margin:0;font-family:'Heebo','Segoe UI',Arial,sans-serif;color:var(--text);
   background:radial-gradient(1200px 600px at 85% -10%,#2a1f6b 0%,transparent 60%),
              radial-gradient(900px 500px at -10% 110%,#0b4a5c 0%,transparent 55%),var(--bg);min-height:100vh}
 header{padding:22px 28px 6px}
-h1{margin:0;font-size:1.6rem;font-weight:800;background:linear-gradient(90deg,#c4b5fd,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent}
+h1 .logo{border-radius:11px;box-shadow:0 4px 16px rgba(139,92,246,.45)}
+h1 .ttl{background:linear-gradient(90deg,#c4b5fd,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent}
+h1{display:flex;align-items:center;gap:12px;margin:0;font-size:1.6rem;font-weight:800;background:linear-gradient(90deg,#c4b5fd,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent}
 header p{margin:6px 0 0;color:var(--muted);font-size:.95rem}
 main{display:grid;grid-template-columns:420px 1fr;gap:22px;padding:16px 28px 40px;max-width:1500px;margin:auto;align-items:start}
 @media(max-width:960px){main{grid-template-columns:1fr;padding:12px 14px 40px}}
@@ -95,7 +106,7 @@ canvas{max-width:100%;max-height:74vh;width:auto;height:auto;border-radius:10px;
 </head>
 <body>
 <header>
-  <h1>סטודיו רקעים</h1>
+  <h1><img class="logo" src="icons/logo-96.png" alt="" width="44" height="44"><span class="ttl">סטודיו רקעים</span></h1>
   <p>מעלים צילום של המוצר, ובוחרים: AI שממציא רקע חדש, או רקע מוכן מהגלריה</p>
   <button class="install" id="installBtn" hidden>📲 התקן כאפליקציה</button>
   <div class="iosHint" id="iosHint" hidden>להתקנה באייפון: לחץ על כפתור השיתוף ואז על <b>״הוסף למסך הבית״</b>.</div>
