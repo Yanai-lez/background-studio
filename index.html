@@ -231,6 +231,7 @@ canvas{max-width:100%;max-height:74vh;width:auto;height:auto;border-radius:10px;
 const $ = id => document.getElementById(id);
 const FONT = "'Heebo','Segoe UI',Arial,sans-serif";
 const FALLBACK = 'google/gemini-3.1-flash-image-preview';
+let AI_TIMEOUT_MS = 150000;   // כמה זמן מחכים לכל יצירה לפני שמוותרים
 const GRADIO_URL = 'https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js';
 const SPACES = [
   { id: 'briaai/BRIA-RMBG-2.0', api: '/image' },
@@ -262,7 +263,14 @@ function waitImg(im, s, ms = 150000){
   });
 }
 const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
-const errMsg = e => (e && (e.message || (e.error && e.error.message) || (typeof e === 'string' ? e : ''))) || '';
+const errMsg = e => {
+  if (!e) return '';
+  if (e.message === 'timeout') return 'ה-AI לא ענה בזמן (בדרך כלל זה אומר שההתחברות ל-Puter לא הושלמה או שהשירות עמוס)';
+  if (e.message) return e.message;
+  if (e.error && e.error.message) return e.error.message;
+  if (typeof e === 'string') return e;
+  try { return JSON.stringify(e).slice(0, 200); } catch { return ''; }
+};
 function scaledCanvas(im, maxDim){
   const w0 = im.naturalWidth || im.width, h0 = im.naturalHeight || im.height;
   const k = Math.min(1, maxDim / Math.max(w0, h0));
@@ -370,7 +378,7 @@ function buildPrompt(desc, f){
 async function editOne(model, desc, f){
   if (!window.puter) throw new Error('Puter לא נטען. בדוק חיבור לאינטרנט');
   const b64 = makeInput(f.gw, f.gh).toDataURL('image/jpeg', 0.92).split(',')[1];
-  const el = await puter.ai.txt2img(buildPrompt(desc, f), { model, input_image: b64, input_image_mime_type: 'image/jpeg' });
+  const el = await withTimeout(puter.ai.txt2img(buildPrompt(desc, f), { model, input_image: b64, input_image_mime_type: 'image/jpeg' }), AI_TIMEOUT_MS);
   const im = new Image();
   im.crossOrigin = 'anonymous';
   try { return await waitImg(im, el.src); } catch { return el; }
@@ -379,6 +387,8 @@ async function editWithFallback(desc, f){
   const model = $('model').value;
   try { return { im: await editOne(model, desc, f), model }; }
   catch (e){
+    // אחרי חוסר מענה לא מנסים מודל גיבוי, כי כנראה הבעיה בהתחברות ולא במודל
+    if (e && e.message === 'timeout') throw e;
     if ($('fallback').checked && model !== FALLBACK){
       console.warn('fallback after', model, e);
       return { im: await editOne(FALLBACK, desc, f), model: FALLBACK };
@@ -392,9 +402,19 @@ $('gen').onclick = async () => {
   if (!desc){ setStatus('כתוב איזה רקע אתה רוצה', 'err'); return; }
   const fmts = activeFormats();
   const btn = $('gen'); btn.disabled = true; btn.textContent = 'יוצר...';
+  // התחברות מפורשת ל-Puter עוד בתוך הלחיצה, כדי שהדפדפן לא יחסום את החלון הקופץ
+  if (window.puter && puter.auth && typeof puter.auth.isSignedIn === 'function' && !puter.auth.isSignedIn()){
+    setStatus('ממתין להתחברות ל-Puter... אשר את החלון שנפתח (אם לא נפתח חלון, אפשר חלונות קופצים לאתר הזה)');
+    try { await withTimeout(puter.auth.signIn(), 180000); }
+    catch (e){
+      setStatus('ההתחברות ל-Puter לא הושלמה. לחץ שוב ואשר את חלון ההתחברות.', 'err');
+      btn.disabled = false; btn.textContent = '✨ צור תמונות';
+      return;
+    }
+  }
   const t0 = Date.now(); let done = 0, lastErr = null;
   const tick = setInterval(() => setStatus(
-    `ה-AI עובד... ${done}/${fmts.length} פורמטים · ${Math.round((Date.now() - t0) / 1000)} שניות (בפעם הראשונה יופיע חלון התחברות)`), 1000);
+    `ה-AI עובד... ${done}/${fmts.length} פורמטים · ${Math.round((Date.now() - t0) / 1000)} שניות `), 1000);
   try {
     for (let i = 0; i < fmts.length; i += 2){
       const chunk = fmts.slice(i, i + 2);
@@ -417,7 +437,7 @@ $('gen').onclick = async () => {
   } catch (e){
     clearInterval(tick);
     const m = errMsg(e);
-    setStatus('היצירה נכשלה' + (m ? ': ' + m : '') + '. אם נסגר חלון ההתחברות, נסה שוב, או בחר מודל אחר.', 'err');
+    setStatus('היצירה נכשלה' + (m ? ': ' + m : '') + '. נסה שוב, או בחר מודל אחר.', 'err');
   } finally {
     btn.disabled = false; btn.textContent = '✨ צור תמונות';
   }
