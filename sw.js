@@ -1,6 +1,6 @@
 // Service worker: רשת קודם (כדי שעדכונים יופיעו מיד), ומטמון לגיבוי כשאין חיבור.
 // מטפל רק בקבצים של האתר עצמו; Puter, Gradio והגופנים עוברים ישר לרשת.
-const CACHE = 'bg-studio-v2';
+const CACHE = 'bg-studio-v3';
 const SHELL = [
   './', 'index.html', 'manifest.json',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png',
@@ -25,7 +25,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;
   e.respondWith(
-    fetch(req)
+    fetch(req, { cache: 'no-cache' })
       .then(res => {
         if (res && res.ok) {
           const copy = res.clone();
