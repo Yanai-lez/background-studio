@@ -128,7 +128,7 @@ canvas{max-width:100%;max-height:74vh;width:auto;height:auto;border-radius:10px;
       <h2><span class="num">2</span> מצב ורקע</h2>
       <div class="seg" id="modeSeg">
         <button data-m="ai" class="on">✨ AI</button>
-        <button data-m="reg">🖼️ רגיל</button>
+        <button data-m="reg">🖼️ רקע מוכן + AI</button>
       </div>
 
       <!-- ===== מצב AI ===== -->
@@ -138,6 +138,47 @@ canvas{max-width:100%;max-height:74vh;width:auto;height:auto;border-radius:10px;
         <textarea id="prompt" placeholder="למשל: שולחן עץ בהיר במטבח מודרני עם אור בוקר"></textarea>
         <div class="chips" id="presets"></div>
 
+
+      </div>
+
+      <!-- ===== מצב רגיל ===== -->
+      <div id="regBox" hidden>
+        <div class="hint" style="margin-top:2px">בוחרים רקע מוכן מהגלריה, והמוצר מוצמד עליו כטיוטה. אחר כך לוחצים "צור תמונות" וה-AI משלב אותו בתוך הרקע בצורה טבעית: אור, צללים והשתקפויות.</div>
+
+        <label>גלריית רקעים</label>
+        <div class="gallery" id="gallery"></div>
+        <div class="hint" id="galNote" hidden>לא נמצאה גלריה (backgrounds/backgrounds.json). אפשר להעלות רקע משלך למטה.</div>
+        <label for="bgFiles">הוסף רקע משלך (אפשר כמה)</label>
+        <input type="file" id="bgFiles" accept="image/*" multiple style="color:var(--muted)">
+
+        <label for="scale">גודל המוצר</label>
+        <input type="range" id="scale" min="15" max="100" value="40">
+        <label for="offY">מיקום אנכי</label>
+        <input type="range" id="offY" min="-25" max="25" value="0">
+        <label class="check"><input type="checkbox" id="shadow" checked> צל מתחת למוצר</label>
+        <details>
+        <summary>שיפורי טיוטה (לא חובה)</summary>
+        <label class="check"><input type="checkbox" id="natural" checked> שילוב טבעי (התאמת אור וצבע, קצוות רכים, גרעיניות)</label>
+        <label class="check"><input type="checkbox" id="refl"> השתקפות על המשטח (לרקעים מבריקים)</label>
+        <label for="bgBlur">טשטוש רקע (עומק שדה)</label>
+        <input type="range" id="bgBlur" min="0" max="10" value="3">
+        </details>
+
+        <label style="margin-top:16px">הפרדת המוצר מהרקע המקורי</label>
+        <div class="status" id="rstatus"></div>
+        <div id="tools" hidden>
+          <button class="btn skip" id="retry">🔁 נסה שוב להסיר רקע בשרת</button>
+          <button class="btn skip" id="quick">✂️ הסרה מהירה במכשיר (לרקע אחיד)</button>
+          <div id="quickRow" hidden>
+            <label for="tol">רגישות ההסרה (גדול יותר = מסיר יותר)</label>
+            <input type="range" id="tol" min="4" max="70" value="24">
+          </div>
+          <button class="btn skip" id="skipBg">להשתמש בתמונה כמו שהיא (במסגרת)</button>
+        </div>
+      </div>
+
+      <!-- ===== הגדרות AI משותפות ===== -->
+      <div id="aiShared">
         <label for="model">מודל</label>
         <select id="model">
           <optgroup label="Google">
@@ -171,40 +212,6 @@ canvas{max-width:100%;max-height:74vh;width:auto;height:auto;border-radius:10px;
           <label class="check"><input type="checkbox" id="strict" checked> שמור על המוצר בדיוק כמו שהוא (מומלץ)</label>
           <label class="check"><input type="checkbox" id="fallback" checked> אם המודל נכשל, נסה מודל גיבוי</label>
         </details>
-
-      </div>
-
-      <!-- ===== מצב רגיל ===== -->
-      <div id="regBox" hidden>
-        <div class="hint" style="margin-top:2px">בוחרים רקע מוכן והמוצר מוצמד עליו. בלי AI ובלי עלות.</div>
-
-        <label>גלריית רקעים</label>
-        <div class="gallery" id="gallery"></div>
-        <div class="hint" id="galNote" hidden>לא נמצאה גלריה (backgrounds/backgrounds.json). אפשר להעלות רקע משלך למטה.</div>
-        <label for="bgFiles">הוסף רקע משלך (אפשר כמה)</label>
-        <input type="file" id="bgFiles" accept="image/*" multiple style="color:var(--muted)">
-
-        <label for="scale">גודל המוצר</label>
-        <input type="range" id="scale" min="15" max="100" value="40">
-        <label for="offY">מיקום אנכי</label>
-        <input type="range" id="offY" min="-25" max="25" value="0">
-        <label class="check"><input type="checkbox" id="shadow" checked> צל מתחת למוצר</label>
-        <label class="check"><input type="checkbox" id="natural" checked> שילוב טבעי (התאמת אור וצבע, קצוות רכים, גרעיניות)</label>
-        <label class="check"><input type="checkbox" id="refl"> השתקפות על המשטח (לרקעים מבריקים)</label>
-        <label for="bgBlur">טשטוש רקע (עומק שדה)</label>
-        <input type="range" id="bgBlur" min="0" max="10" value="3">
-
-        <label style="margin-top:16px">הפרדת המוצר מהרקע המקורי</label>
-        <div class="status" id="rstatus"></div>
-        <div id="tools" hidden>
-          <button class="btn skip" id="retry">🔁 נסה שוב להסיר רקע בשרת</button>
-          <button class="btn skip" id="quick">✂️ הסרה מהירה במכשיר (לרקע אחיד)</button>
-          <div id="quickRow" hidden>
-            <label for="tol">רגישות ההסרה (גדול יותר = מסיר יותר)</label>
-            <input type="range" id="tol" min="4" max="70" value="24">
-          </div>
-          <button class="btn skip" id="skipBg">להשתמש בתמונה כמו שהיא (במסגרת)</button>
-        </div>
       </div>
     </div>
 
@@ -278,7 +285,8 @@ const FORMATS = [
 let mode = 'ai', view = 'p';
 let src = null, lastImg = null, cutout = null, rectMode = false;
 const results = {}, sel = {};
-FORMATS.forEach(f => { results[f.id] = []; sel[f.id] = 0; });
+const regResults = {}, regSel = {};      // תוצאות AI של מצב "רקע מוכן" (sel = -1: מציג את הטיוטה)
+FORMATS.forEach(f => { results[f.id] = []; sel[f.id] = 0; regResults[f.id] = []; regSel[f.id] = -1; });
 const bgItems = [];
 let bgSel = 0;
 
@@ -362,8 +370,6 @@ document.querySelectorAll('#modeSeg button').forEach(b => b.onclick = () => {
   document.querySelectorAll('#modeSeg button').forEach(x => x.classList.toggle('on', x === b));
   $('aiBox').hidden = mode !== 'ai';
   $('regBox').hidden = mode !== 'reg';
-  $('genStep').hidden = mode !== 'ai';
-  $('thumbs').hidden = mode !== 'ai';
   if (mode === 'reg' && lastImg && !cutout && !removing) startRemoval();
   render();
 });
@@ -406,31 +412,56 @@ function buildPrompt(desc, f){
     'Fill the entire frame with the new scene, product centered and clearly visible, ' + f.hint + ' composition. ' +
     'Do not add any text, logos or watermarks.';
 }
-async function editOne(model, desc, f){
+function draftCanvas(f){
+  const c = document.createElement('canvas'); c.width = f.gw; c.height = f.gh;
+  const x = c.getContext('2d');
+  x.fillStyle = '#888'; x.fillRect(0, 0, c.width, c.height);
+  drawRegBg(x, c.width, c.height);
+  drawProductReg(x, c.width, c.height);
+  return c;
+}
+function buildRegPrompt(f){
+  const extra = $('extra').value.trim();
+  return 'This image is a rough composite: a product photo pasted onto a background scene. Turn it into ONE realistic, natural-looking photograph. ' +
+    'Blend the product into the scene: add realistic contact shadows, cast shadows and soft reflections on the surface it stands on, match the lighting direction, color temperature, perspective and film grain of the background, and clean any jagged cut-out edges, halos or fringes around the product. ' +
+    'Keep the product EXACTLY unchanged (same shape, proportions, colors, textures and every small detail) and keep it at the same position and size. ' +
+    'Keep the background scene the same as given, do not replace or redesign it. ' +
+    ($('light').value ? $('light').value + ' ' : '') +
+    (extra ? 'Additional instructions: ' + extra + '. ' : '') +
+    'Keep the ' + f.hint + ' composition. Do not add any text, logos or watermarks.';
+}
+async function editOne(model, promptText, inCanvas){
   if (!window.puter) throw new Error('Puter לא נטען. בדוק חיבור לאינטרנט');
-  const b64 = makeInput(f.gw, f.gh).toDataURL('image/jpeg', 0.92).split(',')[1];
-  const el = await withTimeout(puter.ai.txt2img(buildPrompt(desc, f), { model, input_image: b64, input_image_mime_type: 'image/jpeg' }), AI_TIMEOUT_MS);
+  const b64 = inCanvas.toDataURL('image/jpeg', 0.92).split(',')[1];
+  const el = await withTimeout(puter.ai.txt2img(promptText, { model, input_image: b64, input_image_mime_type: 'image/jpeg' }), AI_TIMEOUT_MS);
   const im = new Image();
   im.crossOrigin = 'anonymous';
   try { return await waitImg(im, el.src); } catch { return el; }
 }
-async function editWithFallback(desc, f){
+async function editWithFallback(promptText, inCanvas){
   const model = $('model').value;
-  try { return { im: await editOne(model, desc, f), model }; }
+  try { return { im: await editOne(model, promptText, inCanvas), model }; }
   catch (e){
     // אחרי חוסר מענה לא מנסים מודל גיבוי, כי כנראה הבעיה בהתחברות ולא במודל
     if (e && e.message === 'timeout') throw e;
     if ($('fallback').checked && model !== FALLBACK){
       console.warn('fallback after', model, e);
-      return { im: await editOne(FALLBACK, desc, f), model: FALLBACK };
+      return { im: await editOne(FALLBACK, promptText, inCanvas), model: FALLBACK };
     }
     throw e;
   }
 }
 $('gen').onclick = async () => {
+  const isReg = mode === 'reg';
   const desc = $('prompt').value.trim();
-  if (!src){ setStatus('העלה קודם תמונת מוצר', 'err'); return; }
-  if (!desc){ setStatus('כתוב איזה רקע אתה רוצה', 'err'); return; }
+  if (!isReg){
+    if (!src){ setStatus('העלה קודם תמונת מוצר', 'err'); return; }
+    if (!desc){ setStatus('כתוב איזה רקע אתה רוצה', 'err'); return; }
+  } else {
+    if (!lastImg){ setStatus('העלה קודם תמונת מוצר', 'err'); return; }
+    if (removing){ setStatus('המתן רגע, המוצר עדיין מופרד מהרקע המקורי...', 'err'); return; }
+  }
+  const R = isReg ? regResults : results, S = isReg ? regSel : sel;
   const fmts = activeFormats();
   const btn = $('gen'); btn.disabled = true; btn.textContent = 'יוצר...';
   // התחברות מפורשת ל-Puter עוד בתוך הלחיצה, כדי שהדפדפן לא יחסום את החלון הקופץ
@@ -451,16 +482,16 @@ $('gen').onclick = async () => {
       const chunk = fmts.slice(i, i + 2);
       await Promise.allSettled(chunk.map(async f => {
         try {
-          const r = await editWithFallback(desc, f);
-          results[f.id].push(r);
-          sel[f.id] = results[f.id].length - 1;
+          const r = await editWithFallback(isReg ? buildRegPrompt(f) : buildPrompt(desc, f), isReg ? draftCanvas(f) : makeInput(f.gw, f.gh));
+          R[f.id].push(r);
+          S[f.id] = R[f.id].length - 1;
         } catch (e){ console.error(f.label, e); lastErr = e; }
         done++;
         if (f.id === view) render();
       }));
     }
     clearInterval(tick);
-    const ok = fmts.filter(f => results[f.id].length).length;
+    const ok = fmts.filter(f => R[f.id].length).length;
     if (!ok) throw lastErr || new Error('failed');
     render();
     setStatus(ok === fmts.length ? 'מוכן ✓ לא אוהב? לחץ שוב לתוצאה אחרת' :
@@ -526,7 +557,7 @@ function buildGallery(){
     const z = document.createElement('span'); z.className = 'zoom'; z.textContent = '🔍'; z.title = 'הצג בגדול';
     z.onclick = ev => { ev.stopPropagation(); openBgPreview(it); };
     b.appendChild(z);
-    b.onclick = () => { bgSel = i; buildGallery(); render(); };
+    b.onclick = () => { bgSel = i; resetReg(); buildGallery(); render(); };
     g.appendChild(b);
   });
 }
@@ -590,6 +621,7 @@ function applyMask(maskImg){
   fx.drawImage(maskImg, 0, 0, full.width, full.height);
   cutout = trim(full);
   rectMode = false;
+  resetReg();
   render();
 }
 function hasAlpha(im){
@@ -944,6 +976,7 @@ function renderFmt(c, f, aiIm){
   ctx.fillStyle = '#1b2050'; ctx.fillRect(0, 0, W, H);
   if (mode === 'reg'){
     if (!lastImg){ placeholder(ctx, W, H, 'העלה תמונה כדי להתחיל'); return; }
+    if (aiIm){ drawCover(ctx, aiIm, W, H); drawText(ctx, W, H); return; }
     drawRegBg(ctx, W, H);
     drawProductReg(ctx, W, H);
     if ($('natural').checked && (cutout && !rectMode)) addGrainVignette(ctx, W, H);
@@ -976,19 +1009,28 @@ function render(){
   requestAnimationFrame(() => {
     rp = false;
     const f = FORMATS.find(x => x.id === view);
-    const entry = mode === 'ai' ? results[f.id][sel[f.id]] : null;
+    const entry = mode === 'ai' ? results[f.id][sel[f.id]] : regResults[f.id][regSel[f.id]];
     renderFmt(cv, f, entry ? entry.im : null);
-    if (mode === 'ai') renderThumbs(f);
+    renderThumbs(f);
   });
 }
 function renderThumbs(f){
   const box = $('thumbs');
   box.innerHTML = '';
-  results[f.id].forEach((r, i) => {
+  const isReg = mode === 'reg';
+  const R = isReg ? regResults : results, S = isReg ? regSel : sel;
+  if (isReg && R[f.id].length && lastImg){
+    const d = document.createElement('canvas'); d.className = 'thumb' + (S[f.id] === -1 ? ' on' : '');
+    const dc = draftCanvas(f), k = 160 / dc.width; d.width = 160; d.height = Math.round(dc.height * k);
+    d.getContext('2d').drawImage(dc, 0, 0, d.width, d.height); d.title = 'הטיוטה (לפני AI)';
+    d.onclick = () => { S[f.id] = -1; render(); };
+    box.appendChild(d);
+  }
+  R[f.id].forEach((r, i) => {
     const t = document.createElement('img');
-    t.className = 'thumb' + (i === sel[f.id] ? ' on' : '');
+    t.className = 'thumb' + (i === S[f.id] ? ' on' : '');
     t.src = r.im.src;
-    t.onclick = () => { sel[f.id] = i; render(); };
+    t.onclick = () => { S[f.id] = i; render(); };
     box.appendChild(t);
   });
 }
@@ -999,7 +1041,7 @@ async function handleFile(f){
     src = await loadImage(URL.createObjectURL(f));
     lastImg = scaledCanvas(src, 1800);
     cutout = null; rectMode = false; job++; removing = false;
-    FORMATS.forEach(x => { results[x.id] = []; sel[x.id] = 0; });
+    FORMATS.forEach(x => { results[x.id] = []; sel[x.id] = 0; regResults[x.id] = []; regSel[x.id] = -1; });
     $('fname').textContent = f.name || 'תמונה מודבקת';
     $('tools').hidden = true; $('quickRow').hidden = true; setR('');
     setStatus('התמונה נטענה. כתוב רקע ולחץ "צור תמונות"');
@@ -1017,9 +1059,12 @@ document.addEventListener('paste', ev => {
   const it = [...(ev.clipboardData ? ev.clipboardData.items : [])].find(i => i.type.startsWith('image/'));
   if (it) handleFile(it.getAsFile());
 });
-['name', 'subtitle', 'namePos', 'nameColor', 'nameBg', 'nameSize', 'scale', 'offY', 'shadow', 'natural', 'refl', 'bgBlur'].forEach(id => {
-  $(id).addEventListener('input', render);
-  $(id).addEventListener('change', render);
+const DRAFT_IDS = ['scale', 'offY', 'shadow', 'natural', 'refl', 'bgBlur'];
+function resetReg(){ FORMATS.forEach(f => { regSel[f.id] = -1; }); }
+['name', 'subtitle', 'namePos', 'nameColor', 'nameBg', 'nameSize'].concat(DRAFT_IDS).forEach(id => {
+  const h = () => { if (DRAFT_IDS.includes(id)) resetReg(); render(); };
+  $(id).addEventListener('input', h);
+  $(id).addEventListener('change', h);
 });
 
 /* ================= הורדה ================= */
@@ -1040,7 +1085,8 @@ function exportCanvas(f){
   const c = document.createElement('canvas');
   if (mode === 'reg'){
     if (!lastImg) return null;
-    renderFmt(c, f, null);
+    const e = regResults[f.id][regSel[f.id]];
+    renderFmt(c, f, e ? e.im : null);
     return c;
   }
   const e = results[f.id][sel[f.id]];
@@ -1052,7 +1098,7 @@ const fname = f => 'product-' + f.label.replace(':', 'x');
 $('dlOne').onclick = () => {
   const f = FORMATS.find(x => x.id === view);
   const c = exportCanvas(f);
-  if (!c){ alert(mode === 'ai' ? 'צור קודם תמונות בפורמט הזה' : 'העלה קודם תמונת מוצר'); return; }
+  if (!c){ alert('העלה קודם תמונת מוצר' + (mode === 'ai' ? ' ולחץ על צור תמונות' : '')); return; }
   saveCanvas(c, fname(f));
 };
 $('dlAll').onclick = () => {
