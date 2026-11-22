@@ -151,9 +151,6 @@ canvas{max-width:100%;max-height:74vh;width:auto;height:auto;border-radius:10px;
           <label class="check"><input type="checkbox" id="fallback" checked> אם המודל נכשל, נסה מודל גיבוי</label>
         </details>
 
-        <button class="btn gen" id="gen">✨ צור תמונות</button>
-        <div class="status" id="status"></div>
-        <div class="hint">בפעם הראשונה ייפתח חלון התחברות ל-Puter (צריך לאשר חלונות קופצים). השימוש נספר בחשבון ה-Puter שלך, וכל פורמט הוא יצירה נפרדת.</div>
       </div>
 
       <!-- ===== מצב רגיל ===== -->
@@ -212,6 +209,13 @@ canvas{max-width:100%;max-height:74vh;width:auto;height:auto;border-radius:10px;
         <option value="png">PNG (איכות מלאה)</option>
         <option value="jpeg">JPG (קובץ קטן יותר)</option>
       </select>
+    </div>
+
+    <div class="step" id="genStep">
+      <h2><span class="num">5</span> יצירה</h2>
+      <button class="btn gen" id="gen">✨ צור תמונות</button>
+      <div class="status" id="status"></div>
+      <div class="hint">בפעם הראשונה ייפתח חלון התחברות ל-Puter (צריך לאשר חלונות קופצים). השימוש נספר בחשבון ה-Puter שלך, וכל פורמט הוא יצירה נפרדת.</div>
     </div>
   </section>
 
@@ -332,6 +336,7 @@ document.querySelectorAll('#modeSeg button').forEach(b => b.onclick = () => {
   document.querySelectorAll('#modeSeg button').forEach(x => x.classList.toggle('on', x === b));
   $('aiBox').hidden = mode !== 'ai';
   $('regBox').hidden = mode !== 'reg';
+  $('genStep').hidden = mode !== 'ai';
   $('thumbs').hidden = mode !== 'ai';
   if (mode === 'reg' && lastImg && !cutout && !removing) startRemoval();
   render();
