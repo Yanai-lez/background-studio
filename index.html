@@ -893,6 +893,8 @@ window.addEventListener('appinstalled', () => { $('installBtn').hidden = true; $
 const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
 if (!standalone && /iphone|ipad|ipod/i.test(navigator.userAgent)) $('iosHint').hidden = false;
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  const hadSW = !!navigator.serviceWorker.controller; let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadSW && !reloaded){ reloaded = true; location.reload(); } });
   window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(e => console.warn('sw', e)); });
 }
 
