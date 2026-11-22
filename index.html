@@ -65,6 +65,15 @@ summary{cursor:pointer;font-weight:700;font-size:.9rem;padding:10px 0;color:var(
 .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px;margin-top:8px}
 .gitem{height:78px;border-radius:10px;border:2px solid transparent;cursor:pointer;overflow:hidden;position:relative;background:#12163a;padding:0}
 .gitem.on{border-color:var(--accent2)}
+.zoom{position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:.8rem;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2}
+#lb{position:fixed;inset:0;z-index:100;background:rgba(5,7,20,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:14px;overflow:auto}
+#lb[hidden]{display:none}
+#lb .lbimgs{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;max-width:100%}
+#lb img,#lb .lbg{max-width:100%;max-height:78vh;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+#lb .lbg{width:min(80vw,520px);height:min(60vh,380px)}
+#lb .lbcap{color:var(--text);font-weight:700}
+#lb .lbx{position:fixed;top:12px;left:12px;width:44px;height:44px;border-radius:50%;border:0;background:#2a3070;color:#fff;font-size:1.3rem;cursor:pointer}
+#cv{cursor:zoom-in}
 .gitem img,.gitem div{width:100%;height:100%;object-fit:cover;display:block}
 .gitem span{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);font-size:.62rem;padding:2px 3px;text-align:center;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stage{position:sticky;top:14px}
@@ -232,6 +241,7 @@ canvas{max-width:100%;max-height:74vh;width:auto;height:auto;border-radius:10px;
 </main>
 
 <script src="https://js.puter.com/v2/"></script>
+<div id="lb" hidden><button class="lbx" aria-label="סגור">✕</button><div class="lbimgs" id="lbImgs"></div><div class="lbcap" id="lbCap"></div></div>
 <script>
 const $ = id => document.getElementById(id);
 const FONT = "'Heebo','Segoe UI',Arial,sans-serif";
@@ -455,6 +465,33 @@ $('gen').onclick = async () => {
  ['צהוב', '#fff4c2', '#f5c542'], ['לילה', '#2b2f3a', '#0f1117']]
 .forEach(([name, a, b]) => bgItems.push({ name, grad: [a, b] }));
 
+/* ===== תצוגה מלאה ===== */
+function lbOpen(nodes, cap){
+  const box = $('lbImgs'); box.innerHTML = '';
+  nodes.forEach(n => box.appendChild(n));
+  $('lbCap').textContent = cap || '';
+  $('lb').hidden = false;
+}
+function lbClose(){ $('lb').hidden = true; $('lbImgs').innerHTML = ''; }
+function openBgPreview(it){
+  if (it.grad){
+    const d = document.createElement('div'); d.className = 'lbg';
+    d.style.background = `linear-gradient(135deg,${it.grad[0]},${it.grad[1]})`;
+    return lbOpen([d], it.name);
+  }
+  const nodes = [it.ims.p, it.ims.l].filter((im, i, a) => im && a.indexOf(im) === i).map(im => {
+    const e = document.createElement('img'); e.src = im.src; e.alt = it.name; return e;
+  });
+  lbOpen(nodes, it.name + (nodes.length > 1 ? ' · לאורך ולרוחב' : ''));
+}
+$('cv').addEventListener('click', () => {
+  if ($('cv').width < 2) return;
+  const e = document.createElement('img'); e.src = $('cv').toDataURL('image/png'); e.alt = 'תצוגה מלאה';
+  lbOpen([e], 'לחץ בכל מקום כדי לסגור');
+});
+$('lb').addEventListener('click', lbClose);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') lbClose(); });
+
 function buildGallery(){
   const g = $('gallery');
   g.innerHTML = '';
@@ -471,6 +508,9 @@ function buildGallery(){
       b.appendChild(im);
     }
     const sp = document.createElement('span'); sp.textContent = it.name; b.appendChild(sp);
+    const z = document.createElement('span'); z.className = 'zoom'; z.textContent = '🔍'; z.title = 'הצג בגדול';
+    z.onclick = ev => { ev.stopPropagation(); openBgPreview(it); };
+    b.appendChild(z);
     b.onclick = () => { bgSel = i; buildGallery(); render(); };
     g.appendChild(b);
   });
