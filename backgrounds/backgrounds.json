@@ -1,0 +1,6 @@
+[
+  {"name": "קיר כהה",   "portrait": "dark-p.webp",     "landscape": "dark-l.webp"},
+  {"name": "שולחן עץ",  "portrait": "wood-p.webp",     "landscape": "wood-l.webp"},
+  {"name": "מקלדת",     "portrait": "keyboard-p.webp", "landscape": "keyboard-l.webp"},
+  {"name": "פד עכבר",   "landscape": "mousepad-l.webp"}
+]
