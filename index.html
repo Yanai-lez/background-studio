@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>סטודיו רקעים</title>
+<meta name="theme-color" content="#0f1226">
+<meta name="description" content="מעלים תמונת מוצר ומחליפים לה רקע: AI שממציא רקע חדש, או רקע מוכן מהגלריה">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="סטודיו רקעים">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0f1226;--panel:#181c3a;--panel2:#1f244a;--line:#2c3263;--text:#eef0ff;--muted:#9aa3d6;--accent:#8b5cf6;--accent2:#22d3ee;--ok:#34d399}
@@ -70,12 +79,16 @@ canvas{max-width:100%;max-height:74vh;width:auto;height:auto;border-radius:10px;
 .thumb{height:64px;border-radius:8px;border:2px solid transparent;cursor:pointer;opacity:.7;flex:none}
 .thumb.on{border-color:var(--accent2);opacity:1}
 .dlrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.install{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:9px 16px;border:0;border-radius:999px;background:linear-gradient(135deg,var(--accent),#ec4899);color:#fff;font:inherit;font-weight:800;font-size:.9rem;cursor:pointer}
+.iosHint{margin-top:10px;font-size:.82rem;color:var(--muted);line-height:1.5;max-width:560px;border:1px solid var(--line);border-radius:12px;padding:8px 12px;background:rgba(18,22,58,.6)}
 </style>
 </head>
 <body>
 <header>
   <h1>סטודיו רקעים</h1>
   <p>מעלים צילום של המוצר, ובוחרים: AI שממציא רקע חדש, או רקע מוכן מהגלריה</p>
+  <button class="install" id="installBtn" hidden>📲 התקן כאפליקציה</button>
+  <div class="iosHint" id="iosHint" hidden>להתקנה באייפון: לחץ על כפתור השיתוף ואז על <b>״הוסף למסך הבית״</b>.</div>
 </header>
 
 <main>
@@ -835,6 +848,27 @@ $('dlAll').onclick = () => {
   if (!list.length){ alert(mode === 'ai' ? 'צור קודם תמונות' : 'העלה קודם תמונת מוצר'); return; }
   list.forEach((f, i) => setTimeout(() => saveCanvas(exportCanvas(f), fname(f)), i * 700));
 };
+
+/* ================= התקנה כאפליקציה (PWA) ================= */
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstall = e;
+  $('installBtn').hidden = false;
+});
+$('installBtn').onclick = async () => {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  try { await deferredInstall.userChoice; } catch {}
+  deferredInstall = null;
+  $('installBtn').hidden = true;
+};
+window.addEventListener('appinstalled', () => { $('installBtn').hidden = true; $('iosHint').hidden = true; });
+const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+if (!standalone && /iphone|ipad|ipod/i.test(navigator.userAgent)) $('iosHint').hidden = false;
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(e => console.warn('sw', e)); });
+}
 
 /* ================= התחלה ================= */
 rebuildTabs(); buildGallery(); render(); loadGallery();
