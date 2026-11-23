@@ -184,10 +184,10 @@ canvas{max-width:100%;max-height:74vh;width:auto;height:auto;border-radius:10px;
         <label for="model">מודל</label>
         <select id="model">
           <optgroup label="Google">
-            <option value="google/gemini-3.1-flash-image-preview">Nano Banana 2 (מומלץ)</option>
-            <option value="google/gemini-3-pro-image">Nano Banana Pro (איכות גבוהה, איטי יותר)</option>
-            <option value="google/gemini-3.1-flash-lite-image">Nano Banana 2 Lite (מהיר וזול)</option>
-            <option value="gemini-2.5-flash-image-preview">Nano Banana המקורי</option>
+            <option value="google/gemini-3.1-flash-image-preview">Nano Banana 2 (מומלץ) · ≈$0.07 לתמונה</option>
+            <option value="google/gemini-3-pro-image">Nano Banana Pro (איכות גבוהה) · ≈$0.14</option>
+            <option value="google/gemini-3.1-flash-lite-image">Nano Banana 2 Lite (הכי חסכוני) · ≈$0.03</option>
+            <option value="gemini-2.5-flash-image-preview">Nano Banana המקורי · ≈$0.04</option>
           </optgroup>
           <optgroup label="OpenAI (ניסיוני)">
             <option value="openai/gpt-image-2">GPT Image 2</option>
@@ -250,7 +250,7 @@ canvas{max-width:100%;max-height:74vh;width:auto;height:auto;border-radius:10px;
       <button class="btn gen" id="gen">✨ צור תמונות</button>
       <div class="status" id="status"></div>
       <div class="usage" id="usage" hidden></div>
-      <div class="hint">בפעם הראשונה ייפתח חלון התחברות ל-Puter (צריך לאשר חלונות קופצים). השימוש נספר בחשבון ה-Puter שלך, וכל פורמט הוא יצירה נפרדת.</div>
+      <div class="hint">בפעם הראשונה ייפתח חלון התחברות ל-Puter (צריך לאשר חלונות קופצים). השימוש נספר במכסה החינמית החודשית של חשבון ה-Puter שלך (בלי כרטיס אשראי אין חיוב, וכשהמכסה נגמרת היצירה פשוט נעצרת עד תחילת החודש). כל פורמט הוא יצירה נפרדת, ולכן כדאי לסמן רק את הפורמטים שצריך. המחירים ברשימת המודלים משוערים.</div>
     </div>
   </section>
 
@@ -306,6 +306,8 @@ function waitImg(im, s, ms = 150000){
 const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
 const errMsg = e => {
   if (!e) return '';
+  const raw = JSON.stringify(e && (e.error || e) || '') + ' ' + (e && e.message || '');
+  if (/insufficient_funds|402|quota|allowance/i.test(raw)) return 'נגמרה המכסה החינמית החודשית שלך ב-Puter. היא מתחדשת בתחילת החודש. אפשר לבחור מודל חסכוני יותר (Nano Banana 2 Lite) או להמתין.';
   if (e.message === 'timeout') return 'ה-AI לא ענה בזמן (בדרך כלל זה אומר שההתחברות ל-Puter לא הושלמה או שהשירות עמוס)';
   if (e.message) return e.message;
   if (e.error && e.error.message) return e.error.message;
@@ -510,6 +512,7 @@ $('gen').onclick = async () => {
     }
   }
   const usageBefore = await getUsage();
+  if (usageBefore && avgCost > 0 && usageBefore.remaining < avgCost){ setStatus('נראה שנגמרה המכסה החינמית החודשית ב-Puter. אפשר לנסות בכל זאת או להמתין לתחילת החודש.', 'err'); }
   if (usageBefore){ usageNow = usageBefore; paintUsage(); }
   const t0 = Date.now(); let done = 0, lastErr = null;
   const tick = setInterval(() => setStatus(
