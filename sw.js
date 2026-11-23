@@ -1,6 +1,6 @@
 // Service worker: רשת קודם (כדי שעדכונים יופיעו מיד), ומטמון לגיבוי כשאין חיבור.
 // מטפל רק בקבצים של האתר עצמו; Puter, Gradio והגופנים עוברים ישר לרשת.
-const CACHE = 'bg-studio-v15';
+const CACHE = 'bg-studio-v18';
 const SHELL = [
   './', 'index.html', 'manifest.json',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/logo-96.png',
@@ -24,15 +24,18 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;
-  e.respondWith(
-    fetch(req, { cache: 'no-cache' })
-      .then(res => {
-        if (res && res.ok) {
-          const copy = res.clone();
-          caches.open(CACHE).then(c => c.put(req, copy));
-        }
-        return res;
-      })
-      .catch(() => caches.match(req).then(r => r || (req.mode === 'navigate' ? caches.match('index.html') : Response.error())))
-  );
+  e.respondWith((async () => {
+    const cached = await caches.match(req);
+    const net = fetch(req, { cache: 'no-cache' }).then(res => {
+      if (res && res.ok){ const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
+      return res;
+    });
+    if (!cached){
+      try { return await net; }
+      catch { return (req.mode === 'navigate' && await caches.match('index.html')) || Response.error(); }
+    }
+    // רשת קודם, אבל אם היא איטית (יותר מ-3.5 שניות) מציגים מיד את הגרסה השמורה
+    const slow = new Promise(r => setTimeout(() => r(cached), 3500));
+    return Promise.race([net.catch(() => cached), slow]);
+  })());
 });
