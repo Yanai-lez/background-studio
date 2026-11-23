@@ -475,7 +475,7 @@ function paintUsage(){
   const parts = [];
   if (usageNow){
     const pct = usageNow.total > 0 ? Math.round(usageNow.remaining / usageNow.total * 100) : null;
-    parts.push(`💳 נשאר במכסה החודשית: <b>${usd(Math.max(0, usageNow.remaining))}</b>` + (pct !== null ? ` (${pct}%)` : ''));
+    parts.push(`💳 נשאר במכסה החודשית: <b>${usd(Math.max(0, usageNow.remaining))}</b>` + (pct !== null ? ` (${pct}%) · נוצלו ${Math.min(100, Math.max(0, 100 - pct))}%` : ''));
   }
   if (est > 0) parts.push(`עלות משוערת ליצירה הקרובה: <b>≈${usd(est)}</b> (${n} ${n === 1 ? 'תמונה' : 'תמונות'})`);
   if (lastCost > 0) parts.push(`היצירה האחרונה עלתה: ≈${usd(lastCost)}`);
