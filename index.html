@@ -472,13 +472,16 @@ async function getUsage(){
 function paintUsage(){
   const el = $('usage');
   const n = activeFormats().length, est = avgCost * n;
+  const T = usageNow && usageNow.total > 0 ? usageNow.total : 0;
+  // היחידות של Puter לא תמיד מתורגמות נכון לדולרים, ולכן מציגים באחוזים מהמכסה (אמין תמיד)
+  const pc = v => { const x = v / T * 100; return (x < 0.1 ? '<0.1' : x < 10 ? x.toFixed(1) : Math.round(x)) + '%'; };
   const parts = [];
-  if (usageNow){
-    const pct = usageNow.total > 0 ? Math.round(usageNow.remaining / usageNow.total * 100) : null;
-    parts.push(`💳 נשאר במכסה החודשית: <b>${usd(Math.max(0, usageNow.remaining))}</b>` + (pct !== null ? ` (${pct}%) · נוצלו ${Math.min(100, Math.max(0, 100 - pct))}%` : ''));
+  if (usageNow && T){
+    const left = Math.min(100, Math.max(0, Math.round(usageNow.remaining / T * 100)));
+    parts.push(`💳 נשאר במכסה החודשית: <b>${left}%</b> · נוצלו ${100 - left}%`);
+    if (est > 0) parts.push(`עלות משוערת ליצירה הקרובה: <b>≈${pc(est)}</b> מהמכסה (${n} ${n === 1 ? 'תמונה' : 'תמונות'})`);
+    if (lastCost > 0) parts.push(`היצירה האחרונה עלתה: ≈${pc(lastCost)} מהמכסה`);
   }
-  if (est > 0) parts.push(`עלות משוערת ליצירה הקרובה: <b>≈${usd(est)}</b> (${n} ${n === 1 ? 'תמונה' : 'תמונות'})`);
-  if (lastCost > 0) parts.push(`היצירה האחרונה עלתה: ≈${usd(lastCost)}`);
   const low = usageNow && est > 0 && usageNow.remaining < est;
   if (low) parts.push('⚠️ ייתכן שהמכסה לא תספיק לכל הפורמטים');
   el.innerHTML = parts.join('<br>'); el.hidden = !parts.length; el.classList.toggle('low', !!low);
