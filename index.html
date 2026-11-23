@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>סטודיו רקעים</title>
 <meta name="theme-color" content="#0f1226">
+<script>try{if(localStorage.getItem('bgs_theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}</script>
 <meta name="description" content="מעלים תמונת מוצר ומחליפים לה רקע: AI שממציא רקע חדש, או רקע מוכן מהגלריה">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="סטודיו רקעים">
@@ -22,14 +23,19 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="סטודיו רקעים">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet"></noscript>
 <style>
-:root{--bg:#0f1226;--panel:#181c3a;--panel2:#1f244a;--line:#2c3263;--text:#eef0ff;--muted:#9aa3d6;--accent:#8b5cf6;--accent2:#22d3ee;--ok:#34d399}
+:root{--bg:#0f1226;--panel:#181c3a;--panel2:#1f244a;--line:#2c3263;--text:#eef0ff;--muted:#9aa3d6;--accent:#8b5cf6;--accent2:#22d3ee;--ok:#34d399;--field:#12163a;--field2:#1a1f4d;--g1:#2a1f6b;--g2:#0b4a5c;color-scheme:dark}
+:root[data-theme=light]{--bg:#f4f5fb;--panel:#ffffff;--panel2:#f1f2fb;--line:#d5d9ee;--text:#1b1f3b;--muted:#5b6391;--accent:#7c4ddb;--accent2:#0891b2;--ok:#059669;--field:#ffffff;--field2:#ece9ff;--g1:#e3dcff;--g2:#cdeff5;color-scheme:light}
+:root[data-theme=light] h1 .ttl{background:linear-gradient(90deg,#5b3fd1,#0e7490);-webkit-background-clip:text;background-clip:text;color:transparent}
+#themeBtn{position:fixed;top:12px;left:12px;z-index:150;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:1.15rem;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;padding:0}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{margin:0;font-family:'Heebo','Segoe UI',Arial,sans-serif;color:var(--text);
-  background:radial-gradient(1200px 600px at 85% -10%,#2a1f6b 0%,transparent 60%),
-             radial-gradient(900px 500px at -10% 110%,#0b4a5c 0%,transparent 55%),var(--bg);min-height:100vh}
+  background:radial-gradient(1200px 600px at 85% -10%,var(--g1) 0%,transparent 60%),
+             radial-gradient(900px 500px at -10% 110%,var(--g2) 0%,transparent 55%),var(--bg);min-height:100vh}
 header{padding:22px 28px 6px}
 h1 .logo{border-radius:11px;box-shadow:0 4px 16px rgba(139,92,246,.45)}
 h1 .ttl{background:linear-gradient(90deg,#c4b5fd,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -41,29 +47,29 @@ main{display:grid;grid-template-columns:420px 1fr;gap:22px;padding:16px 28px 40p
 .step h2{margin:0 0 10px;font-size:1rem;display:flex;align-items:center;gap:10px}
 .num{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.85rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0b0d1f}
 label{display:block;font-weight:600;margin:12px 0 5px;font-size:.86rem;color:var(--muted)}
-input[type=text],select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:#12163a;color:var(--text);font:inherit;outline:none}
+input[type=text],select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--field);color:var(--text);font:inherit;outline:none}
 input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 textarea{min-height:72px;resize:vertical}
 input[type=range]{width:100%;accent-color:var(--accent)}
-input[type=color]{width:100%;height:40px;border:1px solid var(--line);border-radius:11px;padding:3px;background:#12163a}
+input[type=color]{width:100%;height:40px;border:1px solid var(--line);border-radius:11px;padding:3px;background:var(--field)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .check{display:flex;gap:9px;align-items:center;font-weight:500;margin-top:11px;color:var(--text);font-size:.88rem}
 .check input{accent-color:var(--accent);width:17px;height:17px}
 .drop{border:2px dashed #3d4590;border-radius:14px;padding:22px 12px;text-align:center;cursor:pointer;background:rgba(139,92,246,.06);transition:.2s}
 .drop:hover,.drop.over{background:rgba(139,92,246,.16);border-color:var(--accent)}
 .drop small{display:block;color:var(--muted);margin-top:4px}
-.status{min-height:1.3em;margin-top:9px;font-size:.86rem;color:var(--accent2);text-align:center;line-height:1.5}
+.status{min-height:2.6em;margin-top:9px;font-size:.86rem;color:var(--accent2);text-align:center;line-height:1.5}
 .usage{margin-top:8px;font-size:.8rem;color:var(--muted);text-align:center;line-height:1.6}
 .usage b{color:var(--text)} .usage.low{color:#fbbf24}
 .status.ok{color:var(--ok)} .status.err{color:#fb7185}
-.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#12163a;border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:6px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--field);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:6px}
 .seg button{border:0;background:transparent;color:var(--muted);padding:11px 4px;border-radius:9px;font:inherit;font-size:.95rem;font-weight:800;cursor:pointer}
 .seg button.on{background:linear-gradient(135deg,var(--accent),#6d4be0);color:#fff}
 .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
-.chip{border:1px solid var(--line);background:#12163a;color:var(--text);border-radius:20px;padding:5px 12px;font:inherit;font-size:.8rem;cursor:pointer}
-.chip:hover{border-color:var(--accent);background:#1a1f4d}
+.chip{border:1px solid var(--line);background:var(--field);color:var(--text);border-radius:20px;padding:5px 12px;font:inherit;font-size:.8rem;cursor:pointer}
+.chip:hover{border-color:var(--accent);background:var(--field2)}
 .fmts{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;margin-top:4px}
-.fmt{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:#12163a;border-radius:10px;padding:8px 9px;font-size:.84rem;cursor:pointer;margin:0;color:var(--text);font-weight:500}
+.fmt{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--field);border-radius:10px;padding:8px 9px;font-size:.84rem;cursor:pointer;margin:0;color:var(--text);font-weight:500}
 .fmt input{accent-color:var(--accent);width:16px;height:16px}
 details{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:2px 12px 10px;background:rgba(18,22,58,.5)}
 summary{cursor:pointer;font-weight:700;font-size:.9rem;padding:10px 0;color:var(--text)}
@@ -75,8 +81,8 @@ summary{cursor:pointer;font-weight:700;font-size:.9rem;padding:10px 0;color:var(
 .btn:disabled{opacity:.6;cursor:wait}
 .btn:hover:not(:disabled){filter:brightness(1.1)}
 .hint{font-size:.78rem;color:var(--muted);line-height:1.55;margin-top:9px}
-.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px;margin-top:8px}
-.gitem{height:78px;border-radius:10px;border:2px solid transparent;cursor:pointer;overflow:hidden;position:relative;background:#12163a;padding:0}
+.gallery{min-height:168px;align-content:start;display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px;margin-top:8px}
+.gitem{height:78px;border-radius:10px;border:2px solid transparent;cursor:pointer;overflow:hidden;position:relative;background:var(--field);padding:0}
 .gitem.on{border-color:var(--accent2)}
 .zoom{position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:.8rem;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2}
 #lb{position:fixed;inset:0;z-index:100;background:rgba(5,7,20,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:14px;overflow:auto}
@@ -107,6 +113,7 @@ canvas{max-width:100%;max-height:74vh;width:auto;height:auto;border-radius:10px;
 </style>
 </head>
 <body>
+<button id="themeBtn" type="button" aria-label="מצב בהיר / כהה" title="מצב בהיר / כהה">☀️</button>
 <header>
   <h1><img class="logo" src="icons/logo-96.png" alt="" width="44" height="44"><span class="ttl">סטודיו רקעים</span></h1>
   <p>מעלים צילום של המוצר, ובוחרים: AI שממציא רקע חדש, או רקע מוכן מהגלריה</p>
@@ -265,10 +272,25 @@ canvas{max-width:100%;max-height:74vh;width:auto;height:auto;border-radius:10px;
   </section>
 </main>
 
-<script src="https://js.puter.com/v2/"></script>
+<script async src="https://js.puter.com/v2/" onload="window.dispatchEvent(new Event('puterready'))"></script>
 <div id="lb" hidden><button class="lbx" aria-label="סגור">✕</button><div class="lbimgs" id="lbImgs"></div><div class="lbcap" id="lbCap"></div></div>
 <script>
 const $ = id => document.getElementById(id);
+/* ===== מצב בהיר / כהה ===== */
+(function(){
+  const root = document.documentElement, btn = document.getElementById('themeBtn');
+  const apply = t => {
+    if (t === 'light') root.setAttribute('data-theme', 'light'); else root.removeAttribute('data-theme');
+    btn.textContent = t === 'light' ? '🌙' : '☀️';
+    btn.title = t === 'light' ? 'עבור למצב כהה' : 'עבור למצב בהיר';
+    const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = t === 'light' ? '#f4f5fb' : '#0f1226';
+  };
+  apply(root.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
+  btn.onclick = () => {
+    const t = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    apply(t); try { localStorage.setItem('bgs_theme', t); } catch {}
+  };
+})();
 const FONT = "'Heebo','Segoe UI',Arial,sans-serif";
 const FALLBACK = 'google/gemini-3.1-flash-image-preview';
 let AI_TIMEOUT_MS = 150000;   // כמה זמן מחכים לכל יצירה לפני שמוותרים
@@ -488,7 +510,7 @@ function paintUsage(){
 }
 async function refreshUsage(){ usageNow = await getUsage(); paintUsage(); return usageNow; }
 $('fmts').addEventListener('change', paintUsage);
-window.addEventListener('load', () => setTimeout(refreshUsage, 1500));
+window.addEventListener('puterready', () => setTimeout(refreshUsage, 500));
 paintUsage();
 
 $('gen').onclick = async () => {
@@ -620,20 +642,21 @@ async function loadGallery(){
     const r = await fetch('backgrounds/backgrounds.json', { cache: 'no-cache' });
     if (!r.ok) throw new Error('no manifest');
     const list = await r.json();
-    for (const it of list){
+    const load = async f => { try { return f ? await loadImage('backgrounds/' + encodeURI(f)) : null; } catch { console.warn('לא נטען', f); return null; } };
+    // טוענים את כל הרקעים במקביל (קודם הכל נטען ברצף ולכן הגלריה הופיעה באיחור גדול)
+    const items = await Promise.all(list.map(async it => {
       // פורמטים נתמכים: "a.jpg" | {file, name} | {name, portrait, landscape}
       const o = typeof it === 'string' ? { file: it } : it;
       const base = o.file || o.portrait || o.landscape || '';
       const name = o.name || base.replace(/\.[^.]+$/, '');
-      const load = async f => { try { return f ? await loadImage('backgrounds/' + encodeURI(f)) : null; } catch { console.warn('לא נטען', f); return null; } };
-      let p = await load(o.portrait), l = await load(o.landscape);
+      let [p, l] = await Promise.all([load(o.portrait), load(o.landscape)]);
       if (o.file){ const one = await load(o.file); p = p || one; l = l || one; }
-      if (!p && !l) continue;
-      bgItems.push({ name, ims: { p, l }, thumb: (l || p).src });
-    }
+      return p || l ? { name, ims: { p, l }, thumb: (l || p).src } : null;
+    }));
+    items.filter(Boolean).forEach(x => bgItems.push(x));
     $('galNote').hidden = true;
   } catch { $('galNote').hidden = false; }
-  buildGallery();
+  buildGallery(); render();
 }
 $('bgFiles').onchange = async () => {
   for (const f of $('bgFiles').files){
@@ -1070,6 +1093,7 @@ function render(){
 }
 function renderThumbs(f){
   const box = $('thumbs');
+  const keepX = box.scrollLeft;
   box.innerHTML = '';
   const isReg = mode === 'reg';
   const R = isReg ? regResults : results, S = isReg ? regSel : sel;
@@ -1087,6 +1111,7 @@ function renderThumbs(f){
     t.onclick = () => { S[f.id] = i; render(); };
     box.appendChild(t);
   });
+  box.scrollLeft = keepX;
 }
 
 /* ================= העלאת תמונה ================= */
@@ -1180,7 +1205,15 @@ const standalone = window.matchMedia('(display-mode: standalone)').matches || na
 if (!standalone && /iphone|ipad|ipod/i.test(navigator.userAgent)) $('iosHint').hidden = false;
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
   const hadSW = !!navigator.serviceWorker.controller; let reloaded = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadSW && !reloaded){ reloaded = true; location.reload(); } });
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadSW || reloaded) return;
+    reloaded = true;
+    if (!lastImg){ location.reload(); return; }       // אם אין עבודה פתוחה, מרעננים בשקט
+    const t = document.createElement('button');        // אחרת לא מקפיצים את המסך: רק מציעים רענון
+    t.textContent = '🔄 יצאה גרסה חדשה, לחץ לרענון';
+    t.style.cssText = 'position:fixed;bottom:12px;right:12px;left:12px;z-index:200;padding:12px;border-radius:12px;border:0;background:#8b5cf6;color:#fff;font:700 .95rem Heebo,sans-serif;cursor:pointer';
+    t.onclick = () => location.reload(); document.body.appendChild(t);
+  });
   window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(e => console.warn('sw', e)); });
 }
 
