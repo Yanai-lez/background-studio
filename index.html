@@ -91,6 +91,7 @@ summary{cursor:pointer;font-weight:700;font-size:.9rem;padding:10px 0;color:var(
 .gitem span{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);font-size:.62rem;padding:2px 3px;text-align:center;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stage{position:sticky;top:14px}
 @media(max-width:960px){.stage{position:static}}
+@media(max-width:960px){#genStep{position:sticky;bottom:8px;z-index:20;box-shadow:0 8px 30px rgba(0,0,0,.6);padding:10px 14px}#genStep h2,#genStep .hint{display:none}#genStep .btn{margin-top:0}#genStep .status:empty{display:none}}
 .tabs{display:flex;gap:8px;margin-bottom:10px;overflow-x:auto}
 .tabs button{flex:1;min-width:92px;padding:10px 8px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--muted);font:inherit;font-weight:700;cursor:pointer;white-space:nowrap}
 .tabs button.on{background:var(--panel2);color:var(--text);border-color:var(--accent)}

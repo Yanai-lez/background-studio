@@ -1,6 +1,6 @@
 // Service worker: רשת קודם (כדי שעדכונים יופיעו מיד), ומטמון לגיבוי כשאין חיבור.
 // מטפל רק בקבצים של האתר עצמו; Puter, Gradio והגופנים עוברים ישר לרשת.
-const CACHE = 'bg-studio-v12';
+const CACHE = 'bg-studio-v13';
 const SHELL = [
   './', 'index.html', 'manifest.json',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/logo-96.png',
