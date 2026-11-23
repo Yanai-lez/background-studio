@@ -191,10 +191,10 @@ canvas{max-width:100%;max-height:74vh;width:auto;height:auto;border-radius:10px;
         <label for="model">מודל</label>
         <select id="model">
           <optgroup label="Google">
-            <option value="google/gemini-3.1-flash-image-preview">Nano Banana 2 (מומלץ) · ≈$0.07 לתמונה</option>
-            <option value="google/gemini-3-pro-image">Nano Banana Pro (איכות גבוהה) · ≈$0.14</option>
-            <option value="google/gemini-3.1-flash-lite-image">Nano Banana 2 Lite (הכי חסכוני) · ≈$0.03</option>
-            <option value="gemini-2.5-flash-image-preview">Nano Banana המקורי · ≈$0.04</option>
+            <option value="google/gemini-3.1-flash-image-preview">Nano Banana 2 (מומלץ) · עלות רגילה</option>
+            <option value="google/gemini-3-pro-image">Nano Banana Pro (איכות גבוהה) · עלות כפולה</option>
+            <option value="google/gemini-3.1-flash-lite-image">Nano Banana 2 Lite (הכי חסכוני) · חצי עלות</option>
+            <option value="gemini-2.5-flash-image-preview">Nano Banana המקורי · חסכוני</option>
           </optgroup>
           <optgroup label="OpenAI (ניסיוני)">
             <option value="openai/gpt-image-2">GPT Image 2</option>
@@ -257,7 +257,7 @@ canvas{max-width:100%;max-height:74vh;width:auto;height:auto;border-radius:10px;
       <button class="btn gen" id="gen">✨ צור תמונות</button>
       <div class="status" id="status"></div>
       <div class="usage" id="usage" hidden></div>
-      <div class="hint">בפעם הראשונה ייפתח חלון התחברות ל-Puter (צריך לאשר חלונות קופצים). השימוש נספר במכסה החינמית החודשית של חשבון ה-Puter שלך (בלי כרטיס אשראי אין חיוב, וכשהמכסה נגמרת היצירה פשוט נעצרת עד תחילת החודש). כל פורמט הוא יצירה נפרדת, ולכן כדאי לסמן רק את הפורמטים שצריך. המחירים ברשימת המודלים משוערים.</div>
+      <div class="hint">בפעם הראשונה ייפתח חלון התחברות ל-Puter (צריך לאשר חלונות קופצים). השימוש נספר במכסה החינמית החודשית של חשבון ה-Puter שלך (בלי כרטיס אשראי אין חיוב, וכשהמכסה נגמרת היצירה פשוט נעצרת עד תחילת החודש). כל פורמט הוא יצירה נפרדת, ולכן כדאי לסמן רק את הפורמטים שצריך. בערך 7 תמונות בחודש במודל הרגיל, ובערך 14 במודל החסכוני (Lite), לפי המכסה שלך.</div>
     </div>
   </section>
 
@@ -372,7 +372,7 @@ function placeholder(ctx, W, H, text){
 FORMATS.forEach(f => {
   const l = document.createElement('label');
   l.className = 'fmt';
-  l.innerHTML = `<input type="checkbox" value="${f.id}" ${f.id === 'p' || f.id === 'l' ? 'checked' : ''}><span><b>${f.label}</b> ${f.sub}</span>`;
+  l.innerHTML = `<input type="checkbox" value="${f.id}" ${f.id === 'p' ? 'checked' : ''}><span><b>${f.label}</b> ${f.sub}</span>`;
   l.querySelector('input').onchange = () => { ensureOne(); rebuildTabs(); render(); };
   $('fmts').appendChild(l);
 });
@@ -452,6 +452,7 @@ function buildRegPrompt(f){
   return 'This image is a rough composite: a product photo pasted onto a background scene. Turn it into ONE realistic, natural-looking photograph. ' +
     'Blend the product into the scene: add realistic contact shadows, cast shadows and soft reflections on the surface it stands on, match the lighting direction, color temperature, perspective and film grain of the background, and clean any jagged cut-out edges, halos or fringes around the product. ' +
     'Keep the product EXACTLY unchanged (same shape, proportions, colors, textures and every small detail) and keep it at the same position and size. ' +
+    'The product must stand naturally on the surface (table or floor) in the scene, with its base touching it. Do NOT rotate, tilt, stretch or change the perspective or proportions of the product. ' +
     'Keep the background scene the same as given, do not replace or redesign it. ' +
     ($('light').value ? $('light').value + ' ' : '') +
     (extra ? 'Additional instructions: ' + extra + '. ' : '') +
@@ -651,7 +652,7 @@ async function loadGallery(){
       const name = o.name || base.replace(/\.[^.]+$/, '');
       let [p, l] = await Promise.all([load(o.portrait), load(o.landscape)]);
       if (o.file){ const one = await load(o.file); p = p || one; l = l || one; }
-      return p || l ? { name, ims: { p, l }, thumb: (l || p).src } : null;
+      return p || l ? { name, ims: { p, l }, thumb: (l || p).src, floor: o.floor } : null;
     }));
     items.filter(Boolean).forEach(x => bgItems.push(x));
     $('galNote').hidden = true;
@@ -991,7 +992,14 @@ function drawProductReg(ctx, W, H){
   const k = Math.min(aw / prod.width, ah / prod.height) * sc;
   const pw = prod.width * k, ph = prod.height * k;
   const cx = W / 2, cy = top + ah / 2 + (+$('offY').value / 100) * H;
-  const px = cx - pw / 2, py = cy - ph / 2;
+  const px = cx - pw / 2;
+  let py = cy - ph / 2;
+  // ברקעים של תמונה: המוצר עומד על המשטח (השולחן/הרצפה) ולא מרחף באמצע
+  const bgIt = bgItems[bgSel];
+  if (bgIt && !bgIt.grad && !frame){
+    const fl = bgIt.floor == null ? .8 : bgIt.floor;
+    py = Math.max(top, Math.min(fl * H - ph + (+$('offY').value / 100) * H, bottom - ph));
+  }
   if (frame){
     const r = Math.min(pw, ph) * .04;
     ctx.save();
