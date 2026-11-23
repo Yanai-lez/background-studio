@@ -1,0 +1,97 @@
+{
+  "url": "https://yanai-lez.github.io/background-studio/",
+  "time": "2026-11-23T08:48:57.714Z",
+  "checks": [
+    {
+      "name": "mobile: נטען",
+      "pass": true,
+      "info": "סטודיו רקעים"
+    },
+    {
+      "name": "mobile: שני מצבים",
+      "pass": true,
+      "info": "✨ AI | 🖼️ רקע מוכן + AI"
+    },
+    {
+      "name": "mobile: כפתור היצירה אחרי הפורמטים",
+      "pass": true,
+      "info": ""
+    },
+    {
+      "name": "mobile: גלריה",
+      "pass": true,
+      "info": "12"
+    },
+    {
+      "name": "mobile: לוגו בכותרת",
+      "pass": true,
+      "info": ""
+    },
+    {
+      "name": "mobile: תמונת תצוגה לשיתוף",
+      "pass": true,
+      "info": "https://yanai-lez.github.io/background-studio/icons/og-image.jpg"
+    },
+    {
+      "name": "desktop: נטען",
+      "pass": true,
+      "info": "סטודיו רקעים"
+    },
+    {
+      "name": "desktop: שני מצבים",
+      "pass": true,
+      "info": "✨ AI | 🖼️ רקע מוכן + AI"
+    },
+    {
+      "name": "desktop: כפתור היצירה אחרי הפורמטים",
+      "pass": true,
+      "info": ""
+    },
+    {
+      "name": "desktop: גלריה",
+      "pass": true,
+      "info": "12"
+    },
+    {
+      "name": "desktop: לוגו בכותרת",
+      "pass": true,
+      "info": ""
+    },
+    {
+      "name": "desktop: תמונת תצוגה לשיתוף",
+      "pass": true,
+      "info": "https://yanai-lez.github.io/background-studio/icons/og-image.jpg"
+    },
+    {
+      "name": "קובץ manifest.json",
+      "pass": true,
+      "info": "200"
+    },
+    {
+      "name": "קובץ sw.js",
+      "pass": true,
+      "info": "200"
+    },
+    {
+      "name": "קובץ icons/icon-512.png",
+      "pass": true,
+      "info": "200"
+    },
+    {
+      "name": "קובץ icons/og-image.jpg",
+      "pass": true,
+      "info": "200"
+    },
+    {
+      "name": "קובץ backgrounds/backgrounds.json",
+      "pass": true,
+      "info": "200"
+    },
+    {
+      "name": "אין שגיאות JS",
+      "pass": true,
+      "info": ""
+    }
+  ],
+  "errors": []
+}
